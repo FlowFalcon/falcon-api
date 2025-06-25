@@ -6,8 +6,8 @@ module.exports = function (app) {
   // Ambil proxy dari file proxies.txt
   function getProxyAgentFromFile() {
     try {
-      const raw = fs.readFileSync('./ploxy.txt', 'utf-8');
-      const proxies = raw.split('\n').map(p => p.trim()).filter(p => p);
+      const path = require('path');
+      const raw = fs.readFileSync(path.join(__dirname, '/src/ploxy.txt'), 'utf-8');  const proxies = raw.split('\n').map(p => p.trim()).filter(p => p);
       if (!proxies.length) throw new Error('proxy kosong');
       const proxy = new ProxyAgent({ proxies, random: true });
       return proxy.config();
