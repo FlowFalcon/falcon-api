@@ -5,18 +5,16 @@ const ProxyAgent = require('@rynn-k/proxy-agent');
 
 module.exports = function (app) {
   function getProxyAgentFromFile() {
-    try {
-      const filePath = path.resolve(__dirname, 'ploxy.txt');
-      const content = fs.readFileSync(filePath, 'utf-8');
-      const proxies = content.split('\n').map(p => p.trim()).filter(p => p.startsWith('http'));
-      if (!proxies.length) throw new Error('No proxies available');
+  try {
+    const proxyFilePath = path.resolve(__dirname, 'ploxy.txt');
+    if (!fs.existsSync(proxyFilePath)) throw new Error('File ploxy.txt tidak ditemukan');
 
-      const proxy = new ProxyAgent('./ploxy.txt', { random: true });
-      return proxy.config(); // <-- yang dikembalikan adalah config-nya
-    } catch (err) {
-      throw new Error('Gagal ambil proxy dari file: ' + err.message);
-    }
+    const proxy = new ProxyAgent(proxyFilePath, { random: true });
+    return proxy.config();
+  } catch (err) {
+    throw new Error('Gagal ambil proxy dari file: ' + err.message);
   }
+}
 
   app.get('/nsfw/generate', async (req, res) => {
     const {
