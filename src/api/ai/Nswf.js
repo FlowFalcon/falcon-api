@@ -1,22 +1,22 @@
 const axios = require('axios');
+const fs = require('fs');
 const ProxyAgent = require('@rynn-k/proxy-agent');
 
 module.exports = function (app) {
-  // Ambil proxy list dan inisialisasi ProxyAgent
-  async function getProxyAgent() {
+  // Ambil proxy dari file proxies.txt
+  function getProxyAgentFromFile() {
     try {
-      const { data } = await axios.get('https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&proxy_format=protocolipport&format=text');
-      const proxies = data.split('\n').map(p => p.trim()).filter(p => p);
-      if (!proxies.length) throw new Error('Proxy list kosong');
-
+      const raw = fs.readFileSync('./ploxy.txt', 'utf-8');
+      const proxies = raw.split('\n').map(p => p.trim()).filter(p => p);
+      if (!proxies.length) throw new Error('proxy kosong');
       const proxy = new ProxyAgent({ proxies, random: true });
       return proxy.config();
     } catch (err) {
-      throw new Error('Gagal ambil proxy: ' + err.message);
+      throw new Error('Gagal ambil proxy dari file: ' + err.message);
     }
   }
 
-  app.get('/nsfw/generate', async (req, res) => {
+  app.get('/ai/kivotos', async (req, res) => {
     const {
       prompt,
       style = 'anime',
@@ -36,11 +36,10 @@ module.exports = function (app) {
     }
 
     try {
-      const proxyConfig = await getProxyAgent();
+      const proxyConfig = getProxyAgentFromFile();
       const session_hash = Math.random().toString(36).slice(2);
 
       const negative_prompt = 'lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, cropped, worst quality, low quality, watermark, blurry';
-
       const base = `https://heartsync-nsfw-uncensored${style !== 'anime' ? `-${style}` : ''}.hf.space`;
 
       // Join queue
@@ -61,7 +60,7 @@ module.exports = function (app) {
         session_hash
       }, proxyConfig);
 
-      // Polling result
+      // Poll hasil
       const { data: stream } = await axios.get(`${base}/gradio_api/queue/data?session_hash=${session_hash}`, proxyConfig);
 
       const lines = stream.split('\n\n');
