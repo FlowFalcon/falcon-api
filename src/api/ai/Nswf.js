@@ -2,13 +2,15 @@ const axios = require('axios');
 const ProxyAgent = require('@rynn-k/proxy-agent');
 
 module.exports = function (app) {
+  // Ambil proxy dan pakai salah satu
   async function getProxyAgentFromUrl() {
     try {
       const { data } = await axios.get('https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt');
       const proxies = data.split('\n').map(p => p.trim()).filter(p => p && p.includes(':'));
       if (!proxies.length) throw new Error('Proxy list kosong');
 
-      const proxy = ProxyAgent.fromArray(proxies, { random: true });
+      const randomProxy = proxies[Math.floor(Math.random() * proxies.length)];
+      const proxy = new ProxyAgent(randomProxy);
       return proxy.config();
     } catch (err) {
       throw new Error('Gagal ambil proxy: ' + err.message);
