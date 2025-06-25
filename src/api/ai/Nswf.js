@@ -1,27 +1,8 @@
 const axios = require('axios');
-const fs = require('fs');
-const path = require('path');
 const ProxyAgent = require('@rynn-k/proxy-agent');
 
 module.exports = function (app) {
-  const tmpProxyPath = path.join(__dirname, 'proxy-tmp.txt');
-
-  async function getProxyAgentFromURL() {
-    try {
-      const { data } = await axios.get('https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt');
-      const proxies = data.split('\n').map(p => p.trim()).filter(p => p && p.includes(':'));
-
-      if (!proxies.length) throw new Error('Proxy kosong');
-
-      // Tulis proxy ke file sementara
-      fs.writeFileSync(tmpProxyPath, proxies.join('\n'), 'utf-8');
-
-      const proxy = new ProxyAgent(tmpProxyPath, { random: true });
-      return proxy.config();
-    } catch (err) {
-      throw new Error('Gagal ambil proxy dari file: ' + err.message);
-    }
-  }
+  const proxy = new ProxyAgent(path.join(__dirname, 'proxies.txt');, { random: true }); // file harus tersedia
 
   app.get('/nsfw/generate', async (req, res) => {
     const {
@@ -33,20 +14,24 @@ module.exports = function (app) {
       steps = 28
     } = req.query;
 
-    if (!prompt) return res.status(400).json({ status: false, message: 'Parameter prompt wajib' });
-
     const styles = ['anime', 'real', 'photo'];
+
+    if (!prompt) {
+      return res.status(400).json({ status: false, message: 'Parameter prompt wajib diisi' });
+    }
+
     if (!styles.includes(style)) {
       return res.status(400).json({ status: false, message: `Style harus salah satu dari: ${styles.join(', ')}` });
     }
 
     try {
-      const proxyConfig = await getProxyAgentFromURL();
-      const session_hash = Math.random().toString(36).slice(2);
-      const negative_prompt = 'lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, cropped, worst quality, low quality, watermark, blurry';
+      const agent = proxy.config(); // ambil proxy aktif
+      const session_hash = Math.random().toString(36).substring(2);
       const base = `https://heartsync-nsfw-uncensored${style !== 'anime' ? `-${style}` : ''}.hf.space`;
 
-      // 1. Join Queue
+      const negative_prompt = 'lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, watermark, blurry';
+
+      // Join ke queue
       await axios.post(`${base}/gradio_api/queue/join`, {
         data: [
           prompt,
@@ -62,36 +47,38 @@ module.exports = function (app) {
         fn_index: 2,
         trigger_id: 16,
         session_hash
-      }, proxyConfig);
+      }, agent);
 
-      // 2. Polling result
-      const { data: stream } = await axios.get(`${base}/gradio_api/queue/data?session_hash=${session_hash}`, proxyConfig);
+      // Ambil hasil queue
+      const { data: stream } = await axios.get(`${base}/gradio_api/queue/data?session_hash=${session_hash}`, agent);
       const lines = stream.split('\n\n');
 
       for (const line of lines) {
         if (line.startsWith('data:')) {
           const d = JSON.parse(line.slice(6));
           if (d.msg === 'process_completed') {
-            const url = d.output?.data?.[0]?.url;
-            if (url) {
-              const img = await axios.get(url, {
+            const imageUrl = d.output?.data?.[0]?.url;
+            if (imageUrl) {
+              const image = await axios.get(imageUrl, {
                 responseType: 'arraybuffer',
                 headers: { Referer: base },
-                ...proxyConfig
+                ...agent
               });
               res.setHeader('Content-Type', 'image/png');
-              return res.send(img.data);
+              return res.send(image.data);
             }
           }
         }
       }
 
-      res.status(500).json({ status: false, message: 'Gagal mendapatkan gambar dari server NSFW' });
-    } catch (err) {
-      res.status(500).json({
+      return res.status(500).json({
         status: false,
-        creator: "FlowFalcon",
-        message: "Gagal generate NSFW image",
+        message: 'Gagal mendapatkan gambar dari server NSFW'
+      });
+    } catch (err) {
+      return res.status(500).json({
+        status: false,
+        message: 'Gagal generate NSFW image',
         error: err.message
       });
     }
