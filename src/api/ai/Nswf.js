@@ -2,37 +2,39 @@ const axios = require('axios');
 const HttpsProxyAgent = require('https-proxy-agent');
 
 module.exports = function (app) {
-  app.get('/ai/kivotos', async (req, res) => {
-    const {
-      prompt,
-      style = 'anime',
-      width = 1024,
-      height = 1024,
-      guidance_scale = 7,
-      inference_steps = 28
-    } = req.query;
-
-    const negative_prompt = 'lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, low score, bad score, average score, signature, watermark, username, blurry';
-
-    const styles = ['anime', 'real', 'photo'];
-    if (!prompt) return res.status(400).json({ status: false, message: 'Parameter prompt wajib diisi' });
-    if (!styles.includes(style)) return res.status(400).json({ status: false, message: `Style harus salah satu dari: ${styles.join(', ')}` });
-
+  async function getRandomProxy() {
     try {
-      const proxyRes = await axios.get('https://proxylist.geonode.com/api/proxy-list?limit=20&page=1&sort_by=lastChecked&sort_type=desc&protocols=https');
-      const proxies = proxyRes.data.data || [];
+      const res = await axios.get('https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&proxy_format=protocolipport&format=text');
+      const proxies = res.data.trim().split('\n').filter(x => x);
+
       if (!proxies.length) throw new Error('Proxy list kosong');
 
       const random = proxies[Math.floor(Math.random() * proxies.length)];
-      const proxyUrl = `http://${random.ip}:${random.port}`;
-      const agent = new HttpsProxyAgent(proxyUrl);
+      return new HttpsProxyAgent('http://' + random);
+    } catch (err) {
+      throw new Error('Gagal mengambil proxy: ' + err.message);
+    }
+  }
 
+  async function nsfwImage(prompt, style = 'anime') {
+    try {
+      const negative = 'lowres, bad anatomy, bad hands, text, error, cropped, signature, watermark';
+      const width = 1024;
+      const height = 1024;
+      const guidance = 7;
+      const steps = 28;
+      const styles = ['anime', 'real', 'photo'];
+
+      if (!prompt) throw new Error('Prompt wajib diisi');
+      if (!styles.includes(style)) throw new Error(`Style harus salah satu dari: ${styles.join(', ')}`);
+
+      const agent = await getRandomProxy();
       const session_hash = Math.random().toString(36).substring(2);
       const base = `https://heartsync-nsfw-uncensored${style !== 'anime' ? `-${style}` : ''}.hf.space`;
 
       // 1. Join Queue
       await axios.post(`${base}/gradio_api/queue/join`, {
-        data: [prompt, negative_prompt, 0, true, +width, +height, +guidance_scale, +inference_steps],
+        data: [prompt, negative, 0, true, width, height, guidance, steps],
         event_data: null,
         fn_index: 2,
         trigger_id: 16,
@@ -42,7 +44,7 @@ module.exports = function (app) {
         headers: { 'Content-Type': 'application/json' }
       });
 
-      // 2. Get Queue Result
+      // 2. Poll Result
       const { data: stream } = await axios.get(`${base}/gradio_api/queue/data?session_hash=${session_hash}`, {
         httpsAgent: agent,
         responseType: 'text'
@@ -55,24 +57,35 @@ module.exports = function (app) {
           if (parsed.msg === 'process_completed') {
             const resultUrl = parsed.output?.data?.[0]?.url;
             if (resultUrl) {
-              const image = await axios.get(resultUrl, {
+              const img = await axios.get(resultUrl, {
                 responseType: 'arraybuffer',
                 headers: { Referer: base },
                 httpsAgent: agent
               });
-
-              res.setHeader('Content-Type', 'image/png');
-              return res.send(image.data);
+              return img.data;
             }
           }
         }
       }
 
-      throw new Error('Gagal mendapatkan gambar NSFW');
-
+      throw new Error('Gagal mendapatkan hasil NSFW image');
     } catch (err) {
-      return res.status(500).json({
+      throw new Error('Gagal generate NSFW image: ' + err.message);
+    }
+  }
+
+  app.get('/ai/kivotos', async (req, res) => {
+    const { prompt, style = 'anime' } = req.query;
+    if (!prompt) return res.status(400).json({ status: false, message: 'Parameter prompt wajib' });
+
+    try {
+      const image = await nsfwImage(prompt, style);
+      res.setHeader('Content-Type', 'image/png');
+      res.send(image);
+    } catch (err) {
+      res.status(500).json({
         status: false,
+        creator: 'FlowFalcon',
         message: 'Gagal generate NSFW image',
         error: err.message
       });
