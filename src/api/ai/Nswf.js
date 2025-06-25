@@ -11,7 +11,7 @@ module.exports = function (app) {
       const proxies = content.split('\n').map(p => p.trim()).filter(p => p.startsWith('http'));
       if (!proxies.length) throw new Error('No proxies available');
 
-      const proxy = new ProxyAgent({ proxies, random: true });
+      const proxy = new ProxyAgent('./ploxy.txt', { random: true });
       return proxy.config(); // <-- yang dikembalikan adalah config-nya
     } catch (err) {
       throw new Error('Gagal ambil proxy dari file: ' + err.message);
