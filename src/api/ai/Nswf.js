@@ -1,26 +1,23 @@
-const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
+const axios = require('axios');
 const ProxyAgent = require('@rynn-k/proxy-agent');
 
 module.exports = function (app) {
-  /**
-   * Ambil proxy random dari file ploxy.txt
-   */
+  // Ambil proxy dari file txt
   function getProxyAgentFromFile() {
     try {
-      const filePath = path.join(__dirname, 'ploxy.txt');
-      const proxy = new ProxyAgent(filePath, { random: true });
+      const raw = fs.readFileSync(path.join(__dirname, 'ploxy.txt'), 'utf-8');
+      const proxies = raw.split('\n').map(p => p.trim()).filter(p => p && p.startsWith('http'));
+      if (!proxies.length) throw new Error('Proxy kosong atau tidak valid');
+      const proxy = new ProxyAgent({ proxies, random: true });
       return proxy.config();
     } catch (err) {
       throw new Error('Gagal ambil proxy dari file: ' + err.message);
     }
   }
 
-  /**
-   * Endpoint: /nsfw/generate
-   * Query: prompt (wajib), style (anime/real/photo), width, height, guidance, steps
-   */
+  // Endpoint generate NSFW image
   app.get('/nsfw/generate', async (req, res) => {
     const {
       prompt,
@@ -31,35 +28,21 @@ module.exports = function (app) {
       steps = 28
     } = req.query;
 
-    if (!prompt) {
-      return res.status(400).json({
-        status: false,
-        creator: "FlowFalcon",
-        message: 'Parameter prompt wajib'
-      });
-    }
+    if (!prompt) return res.status(400).json({ status: false, message: 'Parameter prompt wajib' });
 
     const styles = ['anime', 'real', 'photo'];
-    if (!styles.includes(style)) {
-      return res.status(400).json({
-        status: false,
-        creator: "FlowFalcon",
-        message: `Style harus salah satu dari: ${styles.join(', ')}`
-      });
-    }
+    if (!styles.includes(style)) return res.status(400).json({ status: false, message: `Style harus salah satu dari: ${styles.join(', ')}` });
 
     try {
       const proxyConfig = getProxyAgentFromFile();
-      const session_hash = Math.random().toString(36).slice(2);
+      const session_hash = Math.random().toString(36).substring(2);
       const base = `https://heartsync-nsfw-uncensored${style !== 'anime' ? `-${style}` : ''}.hf.space`;
-
-      const negative_prompt = 'lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, cropped, worst quality, low quality, watermark, blurry';
 
       // Join queue
       await axios.post(`${base}/gradio_api/queue/join`, {
         data: [
           prompt,
-          negative_prompt,
+          'lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, cropped, worst quality, low quality, watermark, blurry',
           0,
           true,
           parseInt(width),
@@ -73,7 +56,7 @@ module.exports = function (app) {
         session_hash
       }, proxyConfig);
 
-      // Polling result
+      // Ambil data dari stream
       const { data: stream } = await axios.get(`${base}/gradio_api/queue/data?session_hash=${session_hash}`, proxyConfig);
       const lines = stream.split('\n\n');
 
@@ -83,28 +66,23 @@ module.exports = function (app) {
           if (d.msg === 'process_completed') {
             const url = d.output?.data?.[0]?.url;
             if (url) {
-              const image = await axios.get(url, {
+              const img = await axios.get(url, {
                 responseType: 'arraybuffer',
                 headers: { Referer: base },
                 ...proxyConfig
               });
               res.setHeader('Content-Type', 'image/png');
-              return res.send(image.data);
+              return res.send(img.data);
             }
           }
         }
       }
 
-      res.status(500).json({
-        status: false,
-        creator: "FlowFalcon",
-        message: 'Gagal mendapatkan gambar dari server NSFW'
-      });
-
+      res.status(500).json({ status: false, message: 'Gagal mendapatkan gambar dari server NSFW' });
     } catch (err) {
       res.status(500).json({
         status: false,
-        creator: "FlowFalcon",
+        creator: 'FlowFalcon',
         message: 'Gagal generate NSFW image',
         error: err.message
       });
