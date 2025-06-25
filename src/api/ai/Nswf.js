@@ -2,88 +2,19 @@ const axios = require('axios');
 const { HttpsProxyAgent } = require('https-proxy-agent');
 
 module.exports = function (app) {
-  async function getRandomProxy() {
-    try {
-      const res = await axios.get('https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&proxy_format=protocolipport&format=text');
-      const proxies = res.data.trim().split('\n').filter(x => x);
-
-      if (!proxies.length) throw new Error('Proxy list kosong');
-
-      const random = proxies[Math.floor(Math.random() * proxies.length)];
-      return new HttpsProxyAgent('http://' + random);
-    } catch (err) {
-      throw new Error('Gagal mengambil proxy: ' + err.message);
-    }
-  }
-
-  async function nsfwImage(prompt, style = 'anime') {
-    try {
-      const negative = 'lowres, bad anatomy, bad hands, text, error, cropped, signature, watermark';
-      const width = 1024;
-      const height = 1024;
-      const guidance = 7;
-      const steps = 28;
-      const styles = ['anime', 'real', 'photo'];
-
-      if (!prompt) throw new Error('Prompt wajib diisi');
-      if (!styles.includes(style)) throw new Error(`Style harus salah satu dari: ${styles.join(', ')}`);
-
-      const agent = await getRandomProxy();
-      const session_hash = Math.random().toString(36).substring(2);
-      const base = `https://heartsync-nsfw-uncensored${style !== 'anime' ? `-${style}` : ''}.hf.space`;
-
-      // 1. Join Queue
-      await axios.post(`${base}/gradio_api/queue/join`, {
-        data: [prompt, negative, 0, true, width, height, guidance, steps],
-        event_data: null,
-        fn_index: 2,
-        trigger_id: 16,
-        session_hash
-      }, {
-        httpsAgent: agent,
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      // 2. Poll Result
-      const { data: stream } = await axios.get(`${base}/gradio_api/queue/data?session_hash=${session_hash}`, {
-        httpsAgent: agent,
-        responseType: 'text'
-      });
-
-      const lines = stream.split('\n\n');
-      for (const line of lines) {
-        if (line.startsWith('data:')) {
-          const parsed = JSON.parse(line.substring(6));
-          if (parsed.msg === 'process_completed') {
-            const resultUrl = parsed.output?.data?.[0]?.url;
-            if (resultUrl) {
-              const img = await axios.get(resultUrl, {
-                responseType: 'arraybuffer',
-                headers: { Referer: base },
-                httpsAgent: agent
-              });
-              return img.data;
-            }
-          }
-        }
-      }
-
-      throw new Error('Gagal mendapatkan hasil NSFW image');
-    } catch (err) {
-      throw new Error('Gagal generate NSFW image: ' + err.message);
-    }
-  }
-
   app.get('/ai/kivotos', async (req, res) => {
     const { prompt, style = 'anime' } = req.query;
-    if (!prompt) return res.status(400).json({ status: false, message: 'Parameter prompt wajib' });
+
+    if (!prompt) {
+      return res.status(400).json({ status: false, message: 'Parameter prompt wajib diisi' });
+    }
 
     try {
-      const image = await nsfwImage(prompt, style);
-      res.setHeader('Content-Type', 'image/png');
-      res.send(image);
+      const imageBuffer = await generateNSFWImage(prompt, { style });
+      res.setHeader('Content-Type', 'image/jpeg');
+      return res.send(imageBuffer);
     } catch (err) {
-      res.status(500).json({
+      return res.status(500).json({
         status: false,
         creator: 'FlowFalcon',
         message: 'Gagal generate NSFW image',
@@ -92,3 +23,80 @@ module.exports = function (app) {
     }
   });
 };
+
+// =======================
+// 🔧 FUNGSI UTAMA
+// =======================
+async function generateNSFWImage(prompt, options = {}) {
+  const {
+    negative_prompt = 'lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, cropped, worst quality, low quality, low score, average score, signature, watermark, username, blurry',
+    style = 'anime',
+    width = 1024,
+    height = 1024,
+    guidance_scale = 7,
+    inference_steps = 28
+  } = options;
+
+  const styles = ['anime', 'real', 'photo'];
+  if (!styles.includes(style)) throw new Error(`Style harus salah satu dari: ${styles.join(', ')}`);
+
+  const proxy = await getProxyFromScrape();
+  const agent = new HttpsProxyAgent(proxy);
+
+  const session_hash = Math.random().toString(36).substring(2);
+  const base = `https://heartsync-nsfw-uncensored${style !== 'anime' ? `-${style}` : ''}.hf.space`;
+
+  // Step 1: Join queue
+  await axios.post(`${base}/gradio_api/queue/join`, {
+    data: [prompt, negative_prompt, 0, true, width, height, guidance_scale, inference_steps],
+    event_data: null,
+    fn_index: 2,
+    trigger_id: 16,
+    session_hash
+  }, {
+    headers: { 'Content-Type': 'application/json' },
+    httpsAgent: agent
+  });
+
+  // Step 2: Ambil hasilnya
+  const { data: stream } = await axios.get(`${base}/gradio_api/queue/data?session_hash=${session_hash}`, {
+    httpsAgent: agent,
+    responseType: 'text'
+  });
+
+  const lines = stream.split('\n\n');
+  for (const line of lines) {
+    if (line.startsWith('data:')) {
+      const parsed = JSON.parse(line.slice(6));
+      if (parsed.msg === 'process_completed') {
+        const resultUrl = parsed.output?.data?.[0]?.url;
+        if (resultUrl) {
+          const img = await axios.get(resultUrl, {
+            responseType: 'arraybuffer',
+            headers: { Referer: base },
+            httpsAgent: agent
+          });
+          return img.data;
+        }
+      }
+    }
+  }
+
+  throw new Error('Gagal mendapatkan hasil NSFW');
+}
+
+// =======================
+// 🔧 Ambil Proxy dari ProxyScrape
+// =======================
+async function getProxyFromScrape() {
+  const res = await axios.get(
+    'https://api.proxyscrape.com/v4/free-proxy-list/get?request=display_proxies&proxy_format=protocolipport&format=text'
+  );
+  const proxies = res.data
+    .trim()
+    .split('\n')
+    .filter(x => x.startsWith('http://') || x.startsWith('https://'));
+
+  if (!proxies.length) throw new Error('Proxy list kosong');
+  return proxies[Math.floor(Math.random() * proxies.length)];
+}
