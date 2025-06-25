@@ -1,23 +1,21 @@
 const axios = require('axios');
-const fs = require('fs');
 const ProxyAgent = require('@rynn-k/proxy-agent');
 const path = require('path');
+const fs = require('fs');
 
 module.exports = function (app) {
-  // === Ambil proxy dari file ===
+  // ✅ Konfigurasi ProxyAgent dari file
   function getProxyAgentFromFile() {
     try {
-      const raw = fs.readFileSync(path.join(__dirname, 'ploxy.txt'), 'utf-8');
-      const proxies = raw.split('\n').map(p => p.trim().replace(/^https?:\/\//, '')).filter(p => p);
-      if (!proxies.length) throw new Error('No proxies available');
-      const proxy = new ProxyAgent({ proxies, random: true });
+      const proxyPath = path.join(__dirname, 'proxy.txt');
+      if (!fs.existsSync(proxyPath)) throw new Error('File proxy.txt tidak ditemukan');
+      const proxy = new ProxyAgent(proxyPath, { random: true }); // ⬅️ path string, bukan object!
       return proxy.config();
     } catch (err) {
       throw new Error('Gagal ambil proxy dari file: ' + err.message);
     }
   }
 
-  // === Endpoint NSFW Generator ===
   app.get('/nsfw/generate', async (req, res) => {
     const {
       prompt,
@@ -41,7 +39,7 @@ module.exports = function (app) {
       const negative_prompt = 'lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, cropped, worst quality, low quality, watermark, blurry';
       const base = `https://heartsync-nsfw-uncensored${style !== 'anime' ? `-${style}` : ''}.hf.space`;
 
-      // Join Queue
+      // 🔁 Step 1: Join Queue
       await axios.post(`${base}/gradio_api/queue/join`, {
         data: [
           prompt,
@@ -59,7 +57,7 @@ module.exports = function (app) {
         session_hash
       }, proxyConfig);
 
-      // Get Result
+      // 🔁 Step 2: Get Data
       const { data: stream } = await axios.get(`${base}/gradio_api/queue/data?session_hash=${session_hash}`, proxyConfig);
       const lines = stream.split('\n\n');
 
