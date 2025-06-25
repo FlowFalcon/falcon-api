@@ -2,13 +2,14 @@ const axios = require('axios');
 const { HttpsProxyAgent } = require('https-proxy-agent');
 
 module.exports = function (app) {
-  app.get('/ai/kivotos', async (req, res) => {
-    const { prompt, style = 'anime' } = req.query;
+  app.get('/ai/nsfw', async (req, res) => {
+  const { prompt, style = 'anime' } = req.query;
 
-    if (!prompt) {
-      return res.status(400).json({ status: false, message: 'Parameter prompt wajib diisi' });
-    }
+  console.log('Incoming request:', { prompt, style }); // <-- tambahin log
 
+  if (!prompt) {
+    return res.status(400).json({ status: false, message: 'Parameter prompt wajib diisi' });
+  }
     try {
       const imageBuffer = await generateNSFWImage(prompt, { style });
       res.setHeader('Content-Type', 'image/jpeg');
