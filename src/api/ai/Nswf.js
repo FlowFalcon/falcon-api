@@ -1,20 +1,25 @@
 const axios = require('axios');
+const fs = require('fs');
+const path = require('path');
 const ProxyAgent = require('@rynn-k/proxy-agent');
 
 module.exports = function (app) {
-  // Ambil daftar proxy dari GitHub lalu masukkan sebagai buffer
+  const tmpProxyPath = path.join(__dirname, 'proxy-tmp.txt');
+
   async function getProxyAgentFromURL() {
     try {
       const { data } = await axios.get('https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt');
       const proxies = data.split('\n').map(p => p.trim()).filter(p => p && p.includes(':'));
+
       if (!proxies.length) throw new Error('Proxy kosong');
 
-      // Simulasikan file proxy.txt dari buffer
-      const buffer = Buffer.from(proxies.join('\n'), 'utf-8');
-      const proxy = new ProxyAgent(buffer, { random: true });
+      // Tulis proxy ke file sementara
+      fs.writeFileSync(tmpProxyPath, proxies.join('\n'), 'utf-8');
+
+      const proxy = new ProxyAgent(tmpProxyPath, { random: true });
       return proxy.config();
     } catch (err) {
-      throw new Error('Gagal ambil proxy dari buffer: ' + err.message);
+      throw new Error('Gagal ambil proxy dari file: ' + err.message);
     }
   }
 
@@ -28,9 +33,7 @@ module.exports = function (app) {
       steps = 28
     } = req.query;
 
-    if (!prompt) {
-      return res.status(400).json({ status: false, message: 'Parameter prompt wajib' });
-    }
+    if (!prompt) return res.status(400).json({ status: false, message: 'Parameter prompt wajib' });
 
     const styles = ['anime', 'real', 'photo'];
     if (!styles.includes(style)) {
@@ -43,7 +46,7 @@ module.exports = function (app) {
       const negative_prompt = 'lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, cropped, worst quality, low quality, watermark, blurry';
       const base = `https://heartsync-nsfw-uncensored${style !== 'anime' ? `-${style}` : ''}.hf.space`;
 
-      // Join Queue
+      // 1. Join Queue
       await axios.post(`${base}/gradio_api/queue/join`, {
         data: [
           prompt,
@@ -61,7 +64,7 @@ module.exports = function (app) {
         session_hash
       }, proxyConfig);
 
-      // Polling queue
+      // 2. Polling result
       const { data: stream } = await axios.get(`${base}/gradio_api/queue/data?session_hash=${session_hash}`, proxyConfig);
       const lines = stream.split('\n\n');
 
