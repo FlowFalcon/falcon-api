@@ -5,9 +5,10 @@ module.exports = function (app) {
   async function getProxyAgentFromUrl() {
     try {
       const { data } = await axios.get('https://raw.githubusercontent.com/TheSpeedX/PROXY-List/master/http.txt');
-      const proxies = data.split('\n').map(p => p.trim()).filter(p => p && !p.startsWith('#') && p.includes(':'));
+      const proxies = data.split('\n').map(p => p.trim()).filter(p => p && p.includes(':'));
       if (!proxies.length) throw new Error('Proxy list kosong');
-      const proxy = new ProxyAgent({ proxies, random: true });
+
+      const proxy = ProxyAgent.fromArray(proxies, { random: true });
       return proxy.config();
     } catch (err) {
       throw new Error('Gagal ambil proxy: ' + err.message);
@@ -39,7 +40,7 @@ module.exports = function (app) {
       const negative_prompt = 'lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, cropped, worst quality, low quality, watermark, blurry';
       const base = `https://heartsync-nsfw-uncensored${style !== 'anime' ? `-${style}` : ''}.hf.space`;
 
-      // 1. Join queue
+      // Join queue
       await axios.post(`${base}/gradio_api/queue/join`, {
         data: [
           prompt,
@@ -57,7 +58,7 @@ module.exports = function (app) {
         session_hash
       }, proxyConfig);
 
-      // 2. Poll result
+      // Polling
       const { data: stream } = await axios.get(`${base}/gradio_api/queue/data?session_hash=${session_hash}`, proxyConfig);
       const lines = stream.split('\n\n');
 
