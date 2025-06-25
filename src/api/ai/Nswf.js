@@ -1,9 +1,9 @@
 const axios = require('axios');
-const ProxyAgent = require('@rynn-k/proxy-agent');
 const path = require('path');
+const ProxyAgent = require('@rynn-k/proxy-agent');
+
 module.exports = function (app) {
-  const proxyPath = path.join(__dirname, 'ploxy.txt');
-  const proxy = new ProxyAgent(proxyPath, { random: true });
+  const proxy = new ProxyAgent(path.join(__dirname, 'ploxy.txt'), { random: true });
 
   app.get('/nsfw/generate', async (req, res) => {
     const {
@@ -15,24 +15,23 @@ module.exports = function (app) {
       steps = 28
     } = req.query;
 
-    const styles = ['anime', 'real', 'photo'];
-
     if (!prompt) {
-      return res.status(400).json({ status: false, message: 'Parameter prompt wajib diisi' });
+      return res.status(400).json({ status: false, creator: "FlowFalcon", message: 'Parameter prompt wajib' });
     }
 
+    const styles = ['anime', 'real', 'photo'];
     if (!styles.includes(style)) {
-      return res.status(400).json({ status: false, message: `Style harus salah satu dari: ${styles.join(', ')}` });
+      return res.status(400).json({ status: false, creator: "FlowFalcon", message: `Style harus salah satu dari: ${styles.join(', ')}` });
     }
 
     try {
-      const agent = proxy.config(); // ambil proxy aktif
-      const session_hash = Math.random().toString(36).substring(2);
+      const agent = proxy.config();
+      const session_hash = Math.random().toString(36).slice(2);
+
+      const negative_prompt = 'lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, cropped, worst quality, low quality, watermark, blurry';
       const base = `https://heartsync-nsfw-uncensored${style !== 'anime' ? `-${style}` : ''}.hf.space`;
 
-      const negative_prompt = 'lowres, bad anatomy, bad hands, text, error, missing finger, extra digits, fewer digits, cropped, worst quality, low quality, watermark, blurry';
-
-      // Join ke queue
+      // Join queue
       await axios.post(`${base}/gradio_api/queue/join`, {
         data: [
           prompt,
@@ -50,7 +49,7 @@ module.exports = function (app) {
         session_hash
       }, agent);
 
-      // Ambil hasil queue
+      // Poll result
       const { data: stream } = await axios.get(`${base}/gradio_api/queue/data?session_hash=${session_hash}`, agent);
       const lines = stream.split('\n\n');
 
@@ -58,9 +57,9 @@ module.exports = function (app) {
         if (line.startsWith('data:')) {
           const d = JSON.parse(line.slice(6));
           if (d.msg === 'process_completed') {
-            const imageUrl = d.output?.data?.[0]?.url;
-            if (imageUrl) {
-              const image = await axios.get(imageUrl, {
+            const url = d.output?.data?.[0]?.url;
+            if (url) {
+              const image = await axios.get(url, {
                 responseType: 'arraybuffer',
                 headers: { Referer: base },
                 ...agent
@@ -72,13 +71,11 @@ module.exports = function (app) {
         }
       }
 
-      return res.status(500).json({
-        status: false,
-        message: 'Gagal mendapatkan gambar dari server NSFW'
-      });
+      res.status(500).json({ status: false, creator: "FlowFalcon", message: 'Gagal mendapatkan gambar dari server NSFW' });
     } catch (err) {
-      return res.status(500).json({
+      res.status(500).json({
         status: false,
+        creator: "FlowFalcon",
         message: 'Gagal generate NSFW image',
         error: err.message
       });
