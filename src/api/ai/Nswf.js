@@ -1,8 +1,9 @@
 const axios = require('axios');
 const ProxyAgent = require('@rynn-k/proxy-agent');
-
+const path = require('path');
 module.exports = function (app) {
-  const proxy = new ProxyAgent(path.join(__dirname, 'proxies.txt');, { random: true }); // file harus tersedia
+  const proxyPath = path.join(__dirname, 'proxies.txt');
+  const proxy = new ProxyAgent(proxyPath, { random: true });
 
   app.get('/nsfw/generate', async (req, res) => {
     const {
