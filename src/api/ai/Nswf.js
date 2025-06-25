@@ -6,16 +6,18 @@ const ProxyAgent = require('@rynn-k/proxy-agent');
 module.exports = function (app) {
   // Ambil proxy dari file txt
   function getProxyAgentFromFile() {
-    try {
-      const raw = fs.readFileSync(path.join(__dirname, 'ploxy.txt'), 'utf-8');
-      const proxies = raw.split('\n').map(p => p.trim()).filter(p => p && p.startsWith('http'));
-      if (!proxies.length) throw new Error('Proxy kosong atau tidak valid');
-      const proxy = new ProxyAgent({ proxies, random: true });
-      return proxy.config();
-    } catch (err) {
-      throw new Error('Gagal ambil proxy dari file: ' + err.message);
-    }
+  try {
+    const txtPath = path.join(__dirname, 'ploxy.txt');
+
+    // Ini caranya yang bener
+    const proxy = new ProxyAgent(txtPath, { random: true });
+
+    // Dapatkan axios config-nya
+    return proxy.config();
+  } catch (err) {
+    throw new Error('Gagal ambil proxy dari file: ' + err.message);
   }
+}
 
   // Endpoint generate NSFW image
   app.get('/nsfw/generate', async (req, res) => {
