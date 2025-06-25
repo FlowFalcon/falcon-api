@@ -22,7 +22,7 @@ module.exports = function (app) {
     }
   }
 
-  app.get('/nsfw/generate', async (req, res) => {
+  app.get('/ai/kivotos', async (req, res) => {
     const {
       prompt,
       style = 'anime',
