@@ -5,16 +5,20 @@ const ProxyAgent = require('@rynn-k/proxy-agent');
 module.exports = function (app) {
   // Ambil proxy dari file proxies.txt
   function getProxyAgentFromFile() {
-    try {
-      const path = require('path');
-      const raw = fs.readFileSync(path.join(__dirname, 'ploxy.txt'), 'utf-8');  const proxies = raw.split('\n').map(p => p.trim()).filter(p => p);
-      if (!proxies.length) throw new Error('proxy kosong');
-      const proxy = new ProxyAgent({ proxies, random: true });
-      return proxy.config();
-    } catch (err) {
-      throw new Error('Gagal ambil proxy dari file: ' + err.message);
-    }
+  try {
+    const proxyPath = path.join(__dirname, 'ploxy.txt'); // pastikan nama file sesuai!
+    const raw = fs.readFileSync(proxyPath, 'utf-8');
+    const proxies = raw.split('\n').map(p => p.trim()).filter(p => p);
+
+    if (!proxies.length) throw new Error('Proxy kosong');
+
+    const proxy = new ProxyAgent(proxyPath, { random: true });
+    return proxy.config(); // <- PASTIKAN return agent-nya
+  } catch (err) {
+    throw new Error('Gagal ambil proxy dari file: ' + err.message);
   }
+}
+
 
   app.get('/ai/kivotos', async (req, res) => {
     const {
