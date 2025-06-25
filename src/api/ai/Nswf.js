@@ -7,8 +7,8 @@ module.exports = function (app) {
   // ✅ Konfigurasi ProxyAgent dari file
   function getProxyAgentFromFile() {
     try {
-      const proxyPath = path.join(__dirname, 'proxy.txt');
-      if (!fs.existsSync(proxyPath)) throw new Error('File proxy.txt tidak ditemukan');
+      const proxyPath = path.join(__dirname, 'ploxy.txt');
+      if (!fs.existsSync(proxyPath)) throw new Error('File proxy tidak ditemukan');
       const proxy = new ProxyAgent(proxyPath, { random: true }); // ⬅️ path string, bukan object!
       return proxy.config();
     } catch (err) {
