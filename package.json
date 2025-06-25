@@ -41,7 +41,7 @@
     "image-size":"latest",
     "@supabase/supabase-js":"2.49.4",
     "pdfkit":"0.17.1",
-    "@rynn-k/proxy-agent":"latest",
+    "https-proxy-agent":"latest",
     "@vercel/analytics": "latest"
   }
 }
