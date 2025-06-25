@@ -7,7 +7,7 @@ module.exports = function (app) {
   function getProxyAgentFromFile() {
     try {
       const path = require('path');
-      const raw = fs.readFileSync(path.join(__dirname, '/src/ploxy.txt'), 'utf-8');  const proxies = raw.split('\n').map(p => p.trim()).filter(p => p);
+      const raw = fs.readFileSync(path.join(__dirname, 'ploxy.txt'), 'utf-8');  const proxies = raw.split('\n').map(p => p.trim()).filter(p => p);
       if (!proxies.length) throw new Error('proxy kosong');
       const proxy = new ProxyAgent({ proxies, random: true });
       return proxy.config();
