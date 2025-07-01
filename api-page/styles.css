@@ -1054,3 +1054,186 @@ input:checked + .slider:before { transform: translateX(26px); }
     animation: slideInUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
 }
 
+/* Enhanced Lazy Loading Styles */
+img[data-src] {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    background: linear-gradient(45deg, var(--background-color) 25%, transparent 25%), 
+                linear-gradient(-45deg, var(--background-color) 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, var(--background-color) 75%), 
+                linear-gradient(-45deg, transparent 75%, var(--background-color) 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    background-color: var(--surface-color);
+}
+
+img.loaded {
+    opacity: 1;
+    background: none !important;
+}
+
+img.error {
+    opacity: 0.5;
+    background: none !important;
+    filter: grayscale(100%);
+}
+
+/* Dark mode lazy loading background */
+.dark-mode img[data-src] {
+    background: linear-gradient(45deg, var(--surface-color) 25%, transparent 25%), 
+                linear-gradient(-45deg, var(--surface-color) 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, var(--surface-color) 75%), 
+                linear-gradient(-45deg, transparent 75%, var(--surface-color) 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    background-color: var(--background-color);
+}
+
+/* Enhanced Responsive Improvements */
+@media (max-width: 1440px) {
+    .hero-container {
+        gap: 3rem;
+    }
+    
+    .api-container {
+        max-width: 1200px;
+        padding: 0 2rem;
+    }
+}
+
+@media (max-width: 1200px) {
+    .hero-visual {
+        order: -1;
+        max-width: 500px;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 992px) {
+    .hero-stats {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-stats {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .category-tabs {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .category-tab {
+        justify-content: center;
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .search-shortcut {
+        display: none;
+    }
+    
+    .hero-badge {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+    }
+}
+
+/* High Resolution Display Support */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .hero-visual-wrapper {
+        backface-visibility: hidden;
+        perspective: 1000px;
+    }
+    
+    .api-card {
+        backface-visibility: hidden;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    
+    .floating-shapes,
+    .shape {
+        display: none !important;
+    }
+    
+    .hero-visual-wrapper {
+        transform: none !important;
+    }
+    
+    .api-card:hover {
+        transform: none !important;
+    }
+}
+
+/* Performance optimizations */
+.api-grid {
+    contain: layout style paint;
+}
+
+.api-card {
+    contain: layout style paint;
+    will-change: transform, box-shadow;
+}
+
+.side-nav {
+    contain: layout style paint;
+}
+
+/* GPU acceleration for smooth animations */
+.hero-visual-wrapper,
+.api-card,
+.btn,
+.side-nav-link {
+    transform: translateZ(0);
+}
+
+/* Print styles enhancement */
+@media print {
+    .side-nav,
+    .main-header,
+    .main-footer,
+    .toast-container,
+    .modal,
+    .floating-shapes {
+        display: none !important;
+    }
+
+    .main-wrapper {
+        margin-left: 0 !important;
+    }
+
+    .api-card {
+        break-inside: avoid;
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+    }
+    
+    .hero-background,
+    .shape {
+        display: none !important;
+    }
+    
+    body {
+        background: white !important;
+        color: black !important;
+    }
+    
+    .api-section {
+        padding: 1rem !important;
+    }
+}
+

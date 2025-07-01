@@ -124,11 +124,12 @@ class APIDocumentation {
     // Data Loading
     async loadSettings() {
         try {
-            const response = await fetch('/src/settings.json');
+            const response = await fetch('/settings.json');
             if (!response.ok) throw new Error('Failed to load settings');
             
             this.settings = await response.json();
             this.updatePageContent();
+            this.initializeLazyLoading();
             
         } catch (error) {
             console.error('Settings load error:', error);
@@ -175,14 +176,11 @@ class APIDocumentation {
             apiCountElement.textContent = `${apiCount}+`;
         }
         
-        // Update banner image
+        // Update banner image with lazy loading
         if (this.settings.bannerImage) {
             const banner = document.getElementById('heroBanner');
             if (banner) {
-                banner.src = this.settings.bannerImage;
-                banner.onerror = () => {
-                    banner.src = '/src/banner.jpg';
-                };
+                this.loadImageLazily(banner, this.settings.bannerImage, '/src/banner.jpg');
             }
         }
     }
@@ -1258,6 +1256,113 @@ class APIDocumentation {
                 document.body.classList.remove('no-scroll');
             }, 300);
         }, 500);
+    }
+    
+    // Lazy Loading Implementation
+    initializeLazyLoading() {
+        if ('IntersectionObserver' in window) {
+            this.imageObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        this.loadImage(img);
+                        observer.unobserve(img);
+                    }
+                });
+            }, {
+                rootMargin: '50px 0px',
+                threshold: 0.01
+            });
+            
+            // Observe all images with data-src attribute
+            document.querySelectorAll('img[data-src]').forEach(img => {
+                this.imageObserver.observe(img);
+            });
+        } else {
+            // Fallback for browsers without IntersectionObserver
+            document.querySelectorAll('img[data-src]').forEach(img => {
+                this.loadImage(img);
+            });
+        }
+    }
+    
+    loadImageLazily(imgElement, src, fallbackSrc = null) {
+        imgElement.dataset.src = src;
+        imgElement.dataset.fallback = fallbackSrc || src;
+        
+        // Add loading placeholder
+        imgElement.style.backgroundImage = 'linear-gradient(45deg, #f0f0f0 25%, transparent 25%), linear-gradient(-45deg, #f0f0f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #f0f0f0 75%), linear-gradient(-45deg, transparent 75%, #f0f0f0 75%)';
+        imgElement.style.backgroundSize = '20px 20px';
+        imgElement.style.backgroundPosition = '0 0, 0 10px, 10px -10px, -10px 0px';
+        imgElement.style.backgroundColor = 'var(--background-color)';
+        
+        if (this.imageObserver) {
+            this.imageObserver.observe(imgElement);
+        } else {
+            this.loadImage(imgElement);
+        }
+    }
+    
+    loadImage(imgElement) {
+        const src = imgElement.dataset.src;
+        const fallbackSrc = imgElement.dataset.fallback;
+        
+        if (!src) return;
+        
+        const tempImg = new Image();
+        tempImg.onload = () => {
+            imgElement.src = src;
+            imgElement.classList.add('loaded');
+            imgElement.style.backgroundImage = '';
+            imgElement.style.backgroundColor = '';
+            imgElement.removeAttribute('data-src');
+        };
+        
+        tempImg.onerror = () => {
+            if (fallbackSrc && fallbackSrc !== src) {
+                tempImg.src = fallbackSrc;
+                tempImg.onload = () => {
+                    imgElement.src = fallbackSrc;
+                    imgElement.classList.add('loaded');
+                    imgElement.style.backgroundImage = '';
+                    imgElement.style.backgroundColor = '';
+                };
+            } else {
+                imgElement.classList.add('error');
+                imgElement.style.backgroundImage = '';
+                imgElement.style.backgroundColor = '';
+                imgElement.alt = 'Gagal memuat gambar';
+                console.warn('Failed to load image:', src);
+            }
+        };
+        
+        tempImg.src = src;
+    }
+    
+    // Performance optimization methods
+    debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+    
+    throttle(func, limit) {
+        let inThrottle;
+        return function() {
+            const args = arguments;
+            const context = this;
+            if (!inThrottle) {
+                func.apply(context, args);
+                inThrottle = true;
+                setTimeout(() => inThrottle = false, limit);
+            }
+        };
     }
 }
 
