@@ -1,16 +1,14 @@
 {
-  "name": "Falcon-Api",
-  "version": "v2.0",
+  "name": "ONLym-Api",
+  "version": "1.0",
   "description": "simple and powerful tools API and easy to use",
   "bannerImage": "/assets/banner.jpg",
   "header": {
     "status": "Online!"
   },
   "apiSettings": {
-    "creator": "FlowFalcon",
-    "apikey": [
-      "falcon-api"
-    ]
+    "creator": "ONLym",
+    "apikey": ["onlym-api"]
   },
   "categories": [
     {
@@ -19,10 +17,20 @@
         {
           "name": "OpenAI Llama3",
           "desc": "Chat dengan model Llama3-8B-8192 Cepat dan cerdas.",
-          "path": "/ai/openai?text=",
+          "path": "/ai/openai",
           "status": "ready",
           "params": {
             "text": "Teks atau pertanyaan yang ingin diajukan ke AI."
+          }
+        },
+        {
+          "name": "ChatBot",
+          "desc": "Chat AI dengan pilihan model: chatgpt4o, deepseek, metaai",
+          "path": "/ai/chatbot",
+          "status": "ready",
+          "params": {
+            "text": "Teks atau pertanyaan untuk AI",
+            "model": "chatgpt4o | deepseek | metaai (opsional, default: chatgpt4o)"
           }
         }
       ]
