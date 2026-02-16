@@ -1,16 +1,16 @@
 [
     {
     "id": "#01",
-    "date": "2025-09-29",
-    "title": "Iklan API", 
-    "message": "Nyari API aktif? sung ke fathurweb.qzz.io (masih satu orang yang kerjain btw) lagi aktif-aktifnya loh",
+    "date": "2026-02-15",
+    "title": "Donasi Dev", 
+    "message": "Support Developer dengan donasi di menu donasi ✨",
     "read": false
     },
   {
     "id": "#02",
-    "date": "2025-09-07",
-    "title": "Sistem Rest API", 
-    "message": "Perubahan Design dan perbaikan bug",
+    "date": "2026-02-15",
+    "title": "Bintz API", 
+    "message": "Rest api bintz baru di buat jika ada bug mohon konfirmasi ke Dev",
     "read": true
   }
 ]

@@ -3,24 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Browse through our collection of code snippets, scripts, and tools. Find what you need or discover something new.">
-    <meta name="theme-color" content="#1a202c">
-    <title>Falcon-API.</title>
-    <link rel="icon" href="/assets/icon.png" type="image/jpeg">
+    <meta name="description" content="Bintz-API Docs">
+    <meta name="theme-color" content="#0a0f1c">
+    <title>Bintz-API</title>
+    <link rel="icon" href="/assets/default.png" type="image/jpeg">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Ubuntu+Mono:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <script>
   tailwind.config = {
     darkMode: 'class',
     theme: {
       extend: {
         fontFamily: {
-          'mono': ['Ubuntu Mono', 'monospace'],
-          'sans': ['Inter', 'system-ui', 'sans-serif']
+          'mono': ['JetBrains Mono', 'monospace'],
+          'sans': ['Space Grotesk', 'system-ui', 'sans-serif']
+        },
+        animation: {
+          'glitch': 'glitch 3s infinite',
+          'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          'flicker': 'flicker 2s linear infinite',
+          'float': 'float 6s ease-in-out infinite',
+        },
+        keyframes: {
+          glitch: {
+            '0%, 100%': { transform: 'translate(0)' },
+            '33%': { transform: 'translate(-2px, 1px)' },
+            '66%': { transform: 'translate(2px, -1px)' },
+          },
+          flicker: {
+            '0%, 100%': { opacity: 1 },
+            '50%': { opacity: 0.8 },
+          },
+          float: {
+            '0%, 100%': { transform: 'translateY(0)' },
+            '50%': { transform: 'translateY(-10px)' },
+          }
         }
       }
     }
@@ -28,123 +49,615 @@
 </script>
 
     <style>
+        /* Hide scrollbar */
         ::-webkit-scrollbar {
             display: none !important;
         }
-        .glass {
-            backdrop-filter: blur(16px) saturate(180%);
-            background: rgba(23, 25, 35, 0.85);
-            border: 1px solid rgba(255, 255, 255, 0.125);
+        
+        /* Circuit pattern background - kotak-kotak garis */
+        .circuit-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+            animation: float 20s linear infinite;
         }
-        .loader {
-            width: 28px;
-            height: 28px;
-            border: 2px solid #4a5568;
-            border-top: 2px solid #e2e8f0;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
+
+        /* Additional grid layer with different color */
+        .circuit-bg::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                linear-gradient(rgba(255, 0, 255, 0.05) 2px, transparent 2px),
+                linear-gradient(90deg, rgba(255, 0, 255, 0.05) 2px, transparent 2px);
+            background-size: 100px 100px;
+            pointer-events: none;
         }
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+
+        /* Neon glow */
+        .neon-text {
+            text-shadow: 
+                0 0 5px rgba(0, 255, 255, 0.7),
+                0 0 10px rgba(0, 255, 255, 0.5),
+                0 0 20px rgba(0, 255, 255, 0.3);
         }
-        .gradient-text {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+
+        .neon-border {
+            box-shadow: 
+                0 0 5px rgba(0, 255, 255, 0.5),
+                inset 0 0 5px rgba(0, 255, 255, 0.3);
         }
-        .btn-gradient {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+
+        /* Cyber button */
+        .cyber-button {
+            position: relative;
+            background: linear-gradient(135deg, #00ffff22, #ff00ff22);
+            border: 1px solid #00ffff;
+            color: #00ffff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
             transition: all 0.3s ease;
         }
-        .btn-gradient:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
+
+        .cyber-button:hover {
+            background: linear-gradient(135deg, #00ffff44, #ff00ff44);
+            box-shadow: 
+                0 0 20px #00ffff,
+                inset 0 0 10px #00ffff;
+            transform: translateY(-2px);
+        }
+
+        /* LED indicator */
+        .led {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00ffff;
+            box-shadow: 0 0 10px #00ffff;
+            animation: pulse-slow 2s infinite;
+        }
+
+        .led.red {
+            background: #ff00ff;
+            box-shadow: 0 0 10px #ff00ff;
+        }
+
+        .led.green {
+            background: #00ff00;
+            box-shadow: 0 0 10px #00ff00;
+        }
+
+        /* Digital display */
+        .digital-display {
+            background: rgba(10, 15, 28, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid #00ffff33;
+            box-shadow: inset 0 0 20px #000000,
+                        0 0 10px #00ffff22;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Glitch effect */
+        .glitch {
+            animation: glitch 3s infinite;
+        }
+
+        /* Loading spinner */
+        .electronic-loader {
+            width: 30px;
+            height: 30px;
+            border: 2px solid #00ffff33;
+            border-top: 2px solid #00ffff;
+            border-right: 2px solid #ff00ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Terminal cursor */
+        .terminal-cursor {
+            display: inline-block;
+            width: 10px;
+            height: 1.2em;
+            background: #00ffff;
+            animation: flicker 1s infinite;
+            vertical-align: middle;
+        }
+
+        /* Card styles */
+        .category-card {
+            background: rgba(10, 15, 28, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .category-card:hover {
+            border-color: rgba(0, 255, 255, 0.5);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+        }
+
+        /* Endpoint item */
+        .endpoint-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-left: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .endpoint-item:hover {
+            border-left-color: #00ffff;
+            background: rgba(0, 255, 255, 0.05);
+        }
+
+        /* Input field */
+        .cyber-input {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            color: #00ffff;
+            transition: all 0.3s ease;
+        }
+
+        .cyber-input:focus {
+            border-color: #ff00ff;
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
+            outline: none;
+        }
+
+        /* Method badge */
+        .method-badge {
+            background: #00ffff;
+            color: #000;
+            font-weight: bold;
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        /* Status badge */
+        .status-badge {
+            background: rgba(0, 255, 255, 0.1);
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            backdrop-filter: blur(4px);
+        }
+
+        /* URL Display */
+        .url-display {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(0, 255, 255, 0.2);
+            border-radius: 6px;
+            padding: 8px 12px;
+            margin-top: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: #00ffff;
+            word-break: break-all;
+            transition: all 0.3s ease;
+        }
+
+        .url-display:hover {
+            border-color: rgba(255, 0, 255, 0.4);
+            box-shadow: 0 0 10px rgba(255, 0, 255, 0.2);
+        }
+
+        .url-label {
+            color: #ff00ff;
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        /* Copy button */
+        .copy-btn {
+            background: transparent;
+            border: 1px solid rgba(0, 255, 255, 0.3);
+            color: #00ffff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 8px;
+        }
+
+        .copy-btn:hover {
+            background: rgba(0, 255, 255, 0.2);
+            border-color: #ff00ff;
+            color: #ff00ff;
+        }
+
+        /* Modal Donasi */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: rgba(10, 15, 28, 0.95);
+            border: 2px solid #00ffff;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 255, 255, 0.3);
+            animation: slideUp 0.3s ease;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: #00ffff;
+            cursor: pointer;
+            font-size: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: #ff00ff;
+            transform: scale(1.2);
+        }
+
+        .qr-code {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .qr-code img {
+            max-width: 200px;
+            width: 100%;
+            height: auto;
+            margin: 0 auto;
+            border-radius: 10px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* Menu Donasi Floating */
+        .donation-menu {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 100;
+        }
+
+        .donation-trigger {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #00ffff, #ff00ff);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+            transition: all 0.3s ease;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        .donation-trigger:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 40px rgba(255, 0, 255, 0.6);
+        }
+
+        .donation-trigger i {
+            color: black;
+            font-size: 24px;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            right: 70px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 255, 255, 0.9);
+            color: black;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            white-space: nowrap;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            font-weight: bold;
+        }
+
+        .donation-trigger:hover .tooltip {
+            opacity: 1;
+            right: 80px;
+        }
+
+        /* Clear search button */
+        .clear-search {
+            position: absolute;
+            right: 80px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #00ffff;
+            cursor: pointer;
+            font-size: 20px;
+            transition: all 0.3s ease;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .clear-search.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .clear-search:hover {
+            color: #ff00ff;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        /* Dynamic URL */
+        .dynamic-url {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: #00ffff;
+            word-break: break-all;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6px;
+            border-radius: 4px;
+            margin-top: 4px;
         }
     </style>
 </head>
-<body class="bg-gray-900 text-slate-300 antialiased font-mono min-h-screen">
-    <main class="max-w-2xl mx-auto px-8 py-16">
+<body class="bg-[#050a14] text-cyan-300 font-mono antialiased min-h-screen relative overflow-x-hidden">
+    <!-- Circuit Pattern Background -->
+    <div class="circuit-bg"></div>
 
-<div class="text-left mb-8">
-    <div class="flex items-center gap-4 mb-4">
-        <img src="/assets/icon.png" class="w-12 md:w-9">
-        <h1 class="text-3xl md:text-4xl font-bold gradient-text">Falcon-API</h1>
-    </div>
-    <p class="text-slate-400 text-xs mx-auto mb-4">
-Selamat datang di dokumentasi Falcon-API. Antarmuka interaktif ini memungkinkan Anda menjelajahi dan menguji koleksi lengkap titik akhir API kami secara real-time.
-    </p>
-    
-     <div class="mb-4 text-xs space-y-1">
-            
-                <div>
-                    <a href="https://t.me/FlowFalcon" target="_blank" class="text-slate-300 hover:text-white underline">Contact FlowFalcon.</a>
+    <!-- Main Content -->
+    <main class="max-w-2xl mx-auto px-8 py-16 relative z-20">
+        <!-- Header with Electronic Style -->
+        <div class="mb-8 relative group">
+            <div class="flex items-center gap-4 mb-4">
+                <div class="relative">
+                    <img src="/assets/default.png" class="w-12 md:w-9 rounded-lg border-2 border-cyan-500/50 neon-border">
+                    <div class="absolute -inset-1 bg-cyan-500/20 blur-lg rounded-lg group-hover:bg-cyan-500/30 transition-all duration-500"></div>
                 </div>
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold neon-text glitch" data-text="Bintz-API">Bintz-API</h1>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="led"></span>
+                        <span class="text-xs text-cyan-500/70 uppercase tracking-widest">SYSTEM ONLINE</span>
+                    </div>
+                </div>
+            </div>
             
+            <!-- Terminal Style Description -->
+            <div class="digital-display p-4 rounded-lg mb-4 border border-cyan-500/30">
+                <div class="flex items-start gap-2">
+                    <span class="text-pink-500">$></span>
+                    <p class="text-cyan-300/90 text-xs leading-relaxed">
+                        <span class="text-pink-400">Bintz-API</span> documentation interface. 
+                        Access and test endpoints in real-time.
+                        <span class="terminal-cursor ml-1"></span>
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Contact with Electronic Style -->
+            <div class="mb-4 text-xs">
+                <a href="https://t.me/BintzOffc" target="_blank" 
+                   class="inline-flex items-center gap-3 px-4 py-2 cyber-button rounded-lg group">
+                    <i class="fab fa-telegram text-lg"></i>
+                    <span class="tracking-wider">CONTACT_BINTZOFFC</span>
+                    <span class="text-[10px] opacity-50">[CONNECT]</span>
+                </a>
+            </div>
         </div>
-</div>
- 
-<!-- Notifications Panel -->
-<div class="mb-8">
-    <div class="flex items-center justify-between mb-3">
-        <h2 class="text-lg font-semibold text-slate-300 flex items-center">
-            <span class="material-icons text-xl mr-2 text-gray-400">notifications</span>
-            Informasi
-        </h2>
-        <span id="unread-count" class="text-xs bg-indigo-500/50 text-indigo-300 px-2 py-1 rounded-full hidden"></span>
-    </div>
-    <div id="notifications-list" class="space-y-2">
-        <!-- Notifications will be loaded here -->
-        <div class="loader"></div>
-    </div>
-</div>
-
-<div class="flex items-center justify-between mb-4">
-    <div class="flex-1 relative">
-        <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
-            <span class="material-icons text-gray-500 text-lg">search</span>
+        
+        <!-- Notifications Panel -->
+        <div class="mb-8">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-sm font-bold flex items-center gap-2 neon-text">
+                    <span class="material-icons text-cyan-400">notifications_active</span>
+                    <span class="tracking-wider">SYSTEM_MESSAGES</span>
+                </h2>
+                <span id="unread-count" class="text-xs bg-cyan-500/20 text-cyan-300 px-3 py-1 rounded-full border border-cyan-500/50 hidden flex items-center gap-1">
+                    <span class="led w-2 h-2"></span>
+                    <span></span>
+                </span>
+            </div>
+            <div id="notifications-list" class="space-y-2">
+                <!-- Notifications will be loaded here -->
+                <div class="flex justify-center py-8">
+                    <div class="electronic-loader"></div>
+                </div>
+            </div>
         </div>
-        <input 
-            type="text" 
-            id="searchInput" 
-            placeholder="Search API endpoints..." 
-            class="w-full pl-12 pr-5 py-4 text-sm border border-gray-700 bg-gray-800 text-slate-300 placeholder-slate-500 focus:outline-none focus:border-indigo-500"
-        >
-    </div>
-</div>
 
-<div id="content" class="space-y-4">
-    <div id="noResults" class="text-center py-16" style="display: none;">
-        <div class="max-w-md mx-auto">
-            <h3 class="text-xs text-slate-400 mb-2">No result found.</h3>
+        <!-- Search Bar - Electronic Style -->
+        <div class="mb-6">
+            <div class="relative group">
+                <div class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none">
+                    <span class="material-icons text-cyan-500/70 group-focus-within:text-cyan-400 transition-colors">search</span>
+                </div>
+                <input 
+                    type="text" 
+                    id="searchInput" 
+                    placeholder=">_ SEARCH_ENDPOINTS..." 
+                    class="cyber-input w-full pl-12 pr-24 py-4 text-sm rounded-lg transition-all duration-300"
+                    autocomplete="off"
+                >
+                <!-- Clear button (X) -->
+                <span id="clearSearch" class="clear-search material-icons" onclick="clearSearchInput()">close</span>
+                <div class="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
+                    <span class="led w-1.5 h-1.5"></span>
+                    <span class="led w-1.5 h-1.5 red"></span>
+                    <span class="led w-1.5 h-1.5 green"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div id="content" class="space-y-4">
+            <div id="noResults" class="text-center py-16 digital-display rounded-lg border-cyan-500/30" style="display: none;">
+                <div class="text-4xl mb-4 opacity-50">⚡</div>
+                <h3 class="text-sm text-cyan-500/70 mb-2 neon-text">NO_RESULTS_FOUND</h3>
+                <p class="text-xs text-cyan-700">>_ ADJUST_SEARCH_PARAMETERS</p>
+            </div>
+
+            <div id="apiList" class="space-y-3">
+                <!-- API list will be loaded here dynamically -->
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="mt-12 pt-6 border-t border-cyan-500/20">
+            <div class="flex justify-between items-center text-xs text-cyan-700">
+                <div class="flex items-center gap-2">
+                    <span class="led w-1.5 h-1.5"></span>
+                    <span>© 2026 BINTZOFFC</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span>REST API 🔥</span>
+
+    <!-- Floating Donation Menu -->
+    <div class="donation-menu">
+        <div class="donation-trigger" onclick="openDonationModal()">
+            <span class="tooltip">SUPPORT US</span>
+            <i class="fas fa-coffee"></i>
         </div>
     </div>
 
-    <div id="apiList" class="space-y-3">
-        <!-- API list will be loaded here dynamically -->
+    <!-- Donation Modal -->
+    <div id="donationModal" class="modal-overlay" onclick="closeDonationModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="modal-close" onclick="closeDonationModal()">&times;</span>
+            
+            <h2 class="text-2xl font-bold neon-text mb-4 text-center">SUPPORT BINTZ-API</h2>
+            
+            <div class="text-center mb-4">
+                <p class="text-cyan-300 text-sm">Scan QR code below to donate</p>
+                <p class="text-pink-400 text-xs mt-1">Your support means a lot! 💙</p>
+            </div>
+            
+            <!-- QR Code Container with your image -->
+            <div class="qr-code">
+                <img src="https://i.ibb.co.com/m5jrcmdg/Screenshot-2026-02-15-09-01-10-33-40deb401b9ffe8e1df2f1cc5ba480b12.jpg" 
+                     alt="Donation QR Code - BintzOffc"
+                     class="mx-auto">
+            </div>
+            
+            <!-- Donation Methods -->
+            <div class="grid grid-cols-2 gap-3 mt-4">
+                <div class="text-center p-3 bg-cyan-500/10 rounded-lg border border-cyan-500/30">
+                    <i class="fab fa-telegram text-2xl text-cyan-400 mb-2"></i>
+                    <p class="text-xs text-cyan-300">Telegram</p>
+                    <p class="text-[10px] text-cyan-600">@BintzOffc</p>
+                </div>
+                <div class="text-center p-3 bg-pink-500/10 rounded-lg border border-pink-500/30">
+                    <i class="fas fa-coffee text-2xl text-pink-400 mb-2"></i>
+                    <p class="text-xs text-pink-300">Saweria</p>
+                    <p class="text-[10px] text-pink-600">Coming Soon</p>
+                </div>
+            </div>
+            
+            <!-- Close Button -->
+            <button onclick="closeDonationModal()" 
+                    class="cyber-button w-full mt-6 py-3 rounded-lg">
+                CLOSE
+            </button>
+        </div>
     </div>
-</div>
-<footer>
-    <p class="text-slate-400 text-xs mx-auto mb-4">
-      2025 FlowFalcon   
-    </p>
-    <p class="text-slate-400 text-xs mx-auto mb-4">
-inspirasi design dari: <a href="https://api.nekolabs.my.id/" target="_blank">api.nekolabs.my.id</a>   
-    </p>
-</footer>
-</main>
 
-<script>
-    // Existing functions from the original file
+    <script>
+    // Store all API items for search
+    let allApiItems = [];
+    let allCategories = [];
+
+    // Base URL - GANTI DENGAN BASE URL API ANDA
+    const BASE_URL = "https://api.bintzstore.my.id"; // Ganti dengan base URL API Anda
+
+    // Function to copy text to clipboard
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            alert('URL copied to clipboard!');
+        }).catch(err => {
+            console.error('Failed to copy: ', err);
+        });
+    }
+
+    // Function to update dynamic URL based on input values
+    function updateDynamicUrl(catIndex, endpointIndex) {
+        const form = document.getElementById(`form-${catIndex}-${endpointIndex}`);
+        const urlDisplay = document.getElementById(`dynamic-url-${catIndex}-${endpointIndex}`);
+        const basePath = urlDisplay.getAttribute('data-base-path');
+        
+        const formData = new FormData(form);
+        const params = new URLSearchParams();
+        
+        for (const [key, value] of formData.entries()) {
+            if (value && value.trim() !== '') {
+                params.append(key, value);
+            }
+        }
+        
+        const fullUrl = `${BASE_URL}${basePath}${params.toString() ? '?' + params.toString() : ''}`;
+        urlDisplay.textContent = fullUrl;
+    }
+
+    // Modal functions
+    function openDonationModal() {
+        document.getElementById('donationModal').style.display = 'flex';
+    }
+
+    function closeDonationModal(event) {
+        if (!event || event.target.classList.contains('modal-overlay') || event.target.classList.contains('modal-close') || event.target.tagName === 'BUTTON') {
+            document.getElementById('donationModal').style.display = 'none';
+        }
+    }
+
+    // Toggle category 
     function toggleCategory(index) {
         const category = document.getElementById(`category-${index}`);
         const icon = document.getElementById(`category-icon-${index}`);
         if (category.classList.contains('hidden')) {
             category.classList.remove('hidden');
             icon.textContent = 'expand_less';
+            icon.classList.add('text-pink-500');
         } else {
             category.classList.add('hidden');
             icon.textContent = 'expand_more';
+            icon.classList.remove('text-pink-500');
         }
     }
 
@@ -154,9 +667,11 @@ inspirasi design dari: <a href="https://api.nekolabs.my.id/" target="_blank">api
         if (endpoint.classList.contains('hidden')) {
             endpoint.classList.remove('hidden');
             icon.textContent = 'expand_less';
+            icon.classList.add('text-pink-500');
         } else {
             endpoint.classList.add('hidden');
             icon.textContent = 'expand_more';
+            icon.classList.remove('text-pink-500');
         }
     }
 
@@ -175,26 +690,26 @@ inspirasi design dari: <a href="https://api.nekolabs.my.id/" target="_blank">api
             }
         }
 
-        const fullPath = `${path}?${params.toString()}`;
+        const fullPath = `${BASE_URL}${path}${params.toString() ? '?' + params.toString() : ''}`;
         responseDiv.classList.remove('hidden');
-        responseContent.innerHTML = '<div class="loader"></div>';
+        responseContent.innerHTML = '<div class="flex justify-center py-4"><div class="electronic-loader"></div></div>';
 
         try {
             const response = await fetch(fullPath);
             const contentType = response.headers.get("content-type");
             if (contentType && contentType.includes("application/json")) {
                 const data = await response.json();
-                responseContent.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                responseContent.innerHTML = `<pre class="text-cyan-400 font-mono text-xs">${JSON.stringify(data, null, 2)}</pre>`;
             } else if (contentType && contentType.startsWith("image/")) {
                 const blob = await response.blob();
                 const imageUrl = URL.createObjectURL(blob);
-                responseContent.innerHTML = `<img src="${imageUrl}" class="max-w-full h-auto rounded-md">`;
+                responseContent.innerHTML = `<img src="${imageUrl}" class="max-w-full h-auto rounded-lg border border-cyan-500/30">`;
             } else {
                 const text = await response.text();
-                responseContent.innerHTML = `<pre>${text}</pre>`;
+                responseContent.innerHTML = `<pre class="text-cyan-300 font-mono text-xs">${text}</pre>`;
             }
         } catch (error) {
-            responseContent.innerHTML = `<pre>${error}</pre>`;
+            responseContent.innerHTML = `<pre class="text-pink-500 font-mono text-xs">${error}</pre>`;
         }
         clearButton.classList.remove('hidden');
     }
@@ -208,181 +723,45 @@ inspirasi design dari: <a href="https://api.nekolabs.my.id/" target="_blank">api
         clearButton.classList.add('hidden');
     }
 
-    // Function to load and render APIs
-    async function loadApis() {
-        const apiList = document.getElementById('apiList');
-        try {
-            const response = await fetch('/assets/settings.json');
-            const data = await response.json();
-            
-            let html = '';
-            data.categories.forEach((category, catIndex) => {
-                html += `
-                <div class="category-group" data-category="${category.name}">
-                    <div class="mb-2">
-                        <div class="bg-gray-800 border border-gray-700">
-                            <button onclick="toggleCategory(${catIndex})" class="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-700 transition-colors duration-150">
-                                <h2 class="font-bold flex items-center">
-                                    <span class="material-icons text-lg mr-3 text-gray-400">folder</span>
-                                    <span class="truncate max-w-xs text-sm">${category.name}</span>
-                                    <span class="ml-2 text-xs text-gray-500">(${category.items.length})</span>
-                                </h2>
-                                <span class="material-icons transition-transform duration-150" id="category-icon-${catIndex}">expand_more</span>
-                            </button>
-                            
-                            <div id="category-${catIndex}" class="hidden">`;
-                
-                category.items.forEach((item, endpointIndex) => {
-                    const method = 'GET'; // Assuming all are GET for now
-                    const pathParts = item.path.split('?');
-                    const path = pathParts[0];
-                    const queryParams = new URLSearchParams(pathParts[1] || '');
-
-                    const statusClasses = {
-                        'ready': 'bg-green-500/20 text-green-400',
-                        'update': 'bg-yellow-500/20 text-yellow-400',
-                        'error': 'bg-red-500/20 text-red-400'
-                    };
-                    const statusClass = statusClasses[item.status] || 'bg-gray-600';
-
-                    html += `
-                                <div class="border-t border-gray-700 api-item" 
-                                     data-method="${method}"
-                                     data-path="${path}"
-                                     data-alias="${item.name}"
-                                     data-description="${item.desc}"
-                                     data-category="${category.name}">
-                                    <button onclick="toggleEndpoint(${catIndex}, ${endpointIndex})" class="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-gray-700 transition-colors duration-150">
-                                        <div class="flex items-center min-w-0 flex-1">
-                                            <span class="inline-block px-3 py-1 text-xs font-semibold text-white mr-3 flex-shrink-0 bg-gray-600">
-                                                ${method}
-                                            </span>
-                                            <div class="flex flex-col min-w-0 flex-1">
-                                                <span class="font-semibold truncate max-w-[90%] font-mono text-sm" title="${path}">${path}</span>
-                                                <div class="flex items-center">
-                                                    <span class="text-xs text-gray-400 truncate max-w-[90%]" title="${item.name}">${item.name}</span>
-                                                    <span class="ml-2 px-2 py-0.5 text-xs rounded-full ${statusClass}">${item.status || 'ready'}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <span class="material-icons transition-transform duration-150 flex-shrink-0" id="endpoint-icon-${catIndex}-${endpointIndex}">expand_more</span>
-                                    </button>
-                                    
-                                    <div id="endpoint-${catIndex}-${endpointIndex}" class="hidden bg-gray-800 p-4 border-t border-gray-700">
-                                        <div class="mb-3">
-                                            <div class="text-gray-400 text-xs">${item.desc}</div>
-                                        </div>
-                                        `;
-                    if (item.status === 'ready') {
-                        html += `
-                                            <div>
-                                                <div class="text-gray-300 font-bold text-xs mb-2 flex items-center">
-                                                    <span class="material-icons text-sm mr-1">play_arrow</span>
-                                                    TRY IT OUT
-                                                </div>
-                                                <div>
-                                                    <form id="form-${catIndex}-${endpointIndex}" onsubmit="executeRequest(event, ${catIndex}, ${endpointIndex}, '${method}', '${path}', 'application/json')">
-                                                        <div class="mb-4 space-y-2">`;
-                        if (item.params) {
-                            Object.keys(item.params).forEach(paramName => {
-                                const isRequired = !queryParams.has(paramName) || queryParams.get(paramName) === '';
-                                 html += `<div>
-                                            <label class="block text-xs font-medium text-slate-400 mb-2">${paramName} ${isRequired ? '<span class="text-red-500">*</span>' : ''}</label>
-                                            <input type="text" name="${paramName}" class="w-full px-3 py-2 border border-gray-600 text-sm focus:outline-none focus:border-indigo-500 bg-gray-700 placeholder:text-slate-500" placeholder="${item.params[paramName]}" ${isRequired ? 'required' : ''}>
-                                          </div>`;
-                            });
-                        }
-                        html += `
-                                                        </div>
-                                                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 font-semibold text-white px-6 py-2 text-xs font-medium transition-colors duration-150">
-                                                            Execute
-                                                        </button>
-                                                        <button type="button" id="clear-${catIndex}-${endpointIndex}" onclick="clearResponse(${catIndex}, ${endpointIndex})" class="hidden bg-gray-700 border border-gray-600 hover:border-gray-500 font-semibold text-slate-300 px-6 py-2 text-xs font-medium transition-colors duration-150 ml-2">
-                                                            Clear
-                                                        </button>
-                                                    </form>
-                                                </div>
-                                            </div>`;
-                    } else {
-                        html += `<div class="text-yellow-400 text-xs p-3 bg-yellow-500/20 border border-yellow-500/30">Endpoint ini tidak dapat diuji coba saat ini.</div>`;
-                    }
-
-                    html += `
-                                        <div id="response-${catIndex}-${endpointIndex}" class="hidden mt-4">
-                                            <div class="text-gray-300 font-bold text-xs mb-2 flex items-center">
-                                                <span class="material-icons text-sm mr-1">code</span>
-                                                RESPONSE
-                                            </div>
-                                            <div class="bg-gray-900 text-white text-xs p-4 border border-gray-700">
-                                                <div class="max-h-80 overflow-auto" id="response-content-${catIndex}-${endpointIndex}"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>`;
-                });
-                html += `</div></div></div>`;
-            });
-            apiList.innerHTML = html;
-        } catch (error) {
-            apiList.innerHTML = '<p class="text-red-500">Failed to load API data.</p>';
-            console.error('Error loading API data:', error);
-        }
+    // Function to clear search input
+    function clearSearchInput() {
+        const searchInput = document.getElementById('searchInput');
+        searchInput.value = '';
+        searchInput.focus();
+        performSearch('');
+        updateClearButton('');
     }
-    
-    // Function to load and render notifications
-    async function loadNotifications() {
-        const notificationsList = document.getElementById('notifications-list');
-        const unreadCountBadge = document.getElementById('unread-count');
-        try {
-            const response = await fetch('/notifications.json');
-            const notifications = await response.json();
 
-            notificationsList.innerHTML = ''; // Clear loader
-            let unreadCount = 0;
-
-            // Sort notifications by date, newest first
-            notifications.sort((a, b) => new Date(b.date) - new Date(a.date));
-
-            notifications.forEach(notif => {
-                if (!notif.read) {
-                    unreadCount++;
-                }
-                const notifElement = document.createElement('div');
-                notifElement.className = `bg-gray-800 border border-gray-700 p-4 text-xs ${notif.read ? 'opacity-60' : ''}`;
-                notifElement.innerHTML = `
-                    <div class="flex justify-between items-start">
-                        <div class="flex-1">
-                            <p class="font-bold text-slate-300 mb-1">${notif.title}</p>
-                            <p class="text-slate-400">${notif.message}</p>
-                        </div>
-                        <div class="flex items-center ml-4 flex-shrink-0">
-                            ${!notif.read ? '<div class="w-2 h-2 bg-green-400 rounded-full mr-2" title="Unread"></div>' : ''}
-                            <span class="text-slate-500">${new Date(notif.date).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
-                        </div>
-                    </div>
-                `;
-                notificationsList.appendChild(notifElement);
-            });
-
-            if (unreadCount > 0) {
-                unreadCountBadge.textContent = `${unreadCount} Belum dibaca`;
-                unreadCountBadge.classList.remove('hidden');
-            }
-
-        } catch (error) {
-            notificationsList.innerHTML = '<p class="text-red-500 text-xs">Gagal memuat notifikasi.</p>';
-            console.error('Error loading notifications:', error);
+    // Function to update clear button visibility
+    function updateClearButton(searchTerm) {
+        const clearButton = document.getElementById('clearSearch');
+        if (searchTerm.length > 0) {
+            clearButton.classList.add('visible');
+        } else {
+            clearButton.classList.remove('visible');
         }
     }
 
-    // Search functionality
-    document.getElementById('searchInput').addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
+    // Function to perform search
+    function performSearch(searchTerm) {
         const apiItems = document.querySelectorAll('.api-item');
         const categories = document.querySelectorAll('.category-group');
         const noResults = document.getElementById('noResults');
         let visibleCount = 0;
 
+        if (searchTerm === '') {
+            // If search is empty, show all items
+            apiItems.forEach(item => {
+                item.style.display = '';
+            });
+            categories.forEach(category => {
+                category.style.display = '';
+            });
+            noResults.style.display = 'none';
+            return;
+        }
+
+        searchTerm = searchTerm.toLowerCase();
         apiItems.forEach(item => {
             const path = item.dataset.path.toLowerCase();
             const alias = item.dataset.alias.toLowerCase();
@@ -410,15 +789,240 @@ inspirasi design dari: <a href="https://api.nekolabs.my.id/" target="_blank">api
         } else {
             noResults.style.display = 'none';
         }
+    }
+
+    // Function to load and render APIs
+    async function loadApis() {
+        const apiList = document.getElementById('apiList');
+        try {
+            const response = await fetch('/assets/settings.json');
+            const data = await response.json();
+            
+            let html = '';
+            data.categories.forEach((category, catIndex) => {
+                html += `
+                <div class="category-group" data-category="${category.name}">
+                    <div class="mb-2 rounded-lg overflow-hidden category-card">
+                        <div class="bg-black/50">
+                            <button onclick="toggleCategory(${catIndex})" class="w-full px-4 py-4 text-left flex items-center justify-between hover:bg-cyan-500/5 transition-all duration-300 group">
+                                <h2 class="font-bold flex items-center">
+                                    <span class="material-icons text-lg mr-3 text-cyan-500/70 group-hover:text-pink-500 transition-colors">developer_board</span>
+                                    <span class="truncate max-w-xs text-sm tracking-wider">${category.name}</span>
+                                    <span class="ml-2 text-xs px-2 py-0.5 bg-cyan-500/10 rounded-full text-cyan-500 border border-cyan-500/30">${category.items.length}</span>
+                                </h2>
+                                <span class="material-icons transition-all duration-300 group-hover:text-pink-500" id="category-icon-${catIndex}">expand_more</span>
+                            </button>
+                            
+                            <div id="category-${catIndex}" class="hidden">`;
+                
+                category.items.forEach((item, endpointIndex) => {
+                    const method = 'GET';
+                    const pathParts = item.path.split('?');
+                    const path = pathParts[0];
+                    const queryParams = new URLSearchParams(pathParts[1] || '');
+                    
+                    // Build base URL without params for dynamic updates
+                    const basePath = item.path;
+
+                    const statusClasses = {
+                        'ready': 'bg-green-500/10 text-green-400 border border-green-500/30',
+                        'update': 'bg-yellow-500/10 text-yellow-400 border border-yellow-500/30',
+                        'error': 'bg-pink-500/10 text-pink-400 border border-pink-500/30'
+                    };
+                    const statusClass = statusClasses[item.status] || 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30';
+
+                    html += `
+                                <div class="border-t border-cyan-500/20 endpoint-item" 
+                                     data-method="${method}"
+                                     data-path="${path}"
+                                     data-alias="${item.name}"
+                                     data-description="${item.desc}"
+                                     data-category="${category.name}">
+                                    <button onclick="toggleEndpoint(${catIndex}, ${endpointIndex})" class="w-full px-4 py-4 text-left flex items-center justify-between hover:bg-cyan-500/10 transition-all duration-300 group">
+                                        <div class="flex items-center min-w-0 flex-1">
+                                            <span class="inline-block px-3 py-1 text-xs font-bold text-black mr-3 flex-shrink-0 rounded method-badge">
+                                                ${method}
+                                            </span>
+                                            <div class="flex flex-col min-w-0 flex-1">
+                                                <span class="font-semibold truncate max-w-[90%] font-mono text-sm text-cyan-300 group-hover:text-pink-400 transition-colors" title="${path}">${item.name}</span>
+                                                <div class="flex items-center flex-wrap gap-2 mt-1">
+                                                    <span class="text-xs text-cyan-600 truncate max-w-[90%]" title="${item.desc}">${item.desc}</span>
+                                                    <span class="px-2 py-0.5 text-xs rounded-full ${statusClass} status-badge">${item.status || 'ready'}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <span class="material-icons transition-all duration-300 group-hover:text-pink-500 flex-shrink-0" id="endpoint-icon-${catIndex}-${endpointIndex}">expand_more</span>
+                                    </button>
+                                    
+                                    <div id="endpoint-${catIndex}-${endpointIndex}" class="hidden bg-black/50 p-5 border-t border-cyan-500/20">
+                                        <div class="mb-4">
+                                            <div class="text-cyan-400 text-xs leading-relaxed p-3 bg-cyan-500/5 rounded-lg border border-cyan-500/20 font-mono">
+                                                >_ ${item.desc}
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- URL Display Section with Dynamic Updates -->
+                                        <div class="url-display mb-4">
+                                            <div class="flex items-center justify-between">
+                                                <span class="url-label">ENDPOINT URL:</span>
+                                                <button class="copy-btn" onclick="copyToClipboard(document.getElementById('dynamic-url-${catIndex}-${endpointIndex}').textContent)">
+                                                    <i class="fas fa-copy mr-1"></i>COPY
+                                                </button>
+                                            </div>
+                                            <div class="dynamic-url" id="dynamic-url-${catIndex}-${endpointIndex}" data-base-path="${basePath}">
+                                                ${BASE_URL}${basePath}
+                                            </div>
+                                        </div>
+                                        `;
+                    if (item.status === 'ready') {
+                        html += `
+                                            <div>
+                                                <div class="text-pink-400 font-bold text-xs mb-3 flex items-center bg-pink-500/10 p-2 rounded-lg border border-pink-500/20">
+                                                    <span class="material-icons text-sm mr-2">bolt</span>
+                                                    EXECUTE_COMMAND
+                                                </div>
+                                                <div>
+                                                    <form id="form-${catIndex}-${endpointIndex}" onsubmit="executeRequest(event, ${catIndex}, ${endpointIndex}, '${method}', '${item.path}', 'application/json')" oninput="updateDynamicUrl(${catIndex}, ${endpointIndex})">
+                                                        <div class="mb-4 space-y-3">`;
+                        if (item.params) {
+                            Object.keys(item.params).forEach(paramName => {
+                                const isRequired = !queryParams.has(paramName) || queryParams.get(paramName) === '';
+                                 html += `<div class="group">
+                                            <label class="block text-xs font-medium text-cyan-500 mb-2 flex items-center">
+                                                <span class="text-pink-400 mr-2">${isRequired ? '>' : '~'}</span>
+                                                ${paramName}
+                                                ${isRequired ? '<span class="text-pink-500 ml-2 text-[10px]">[REQUIRED]</span>' : ''}
+                                            </label>
+                                            <input type="text" name="${paramName}" class="cyber-input w-full px-4 py-2.5 text-sm rounded-lg" placeholder="${item.params[paramName]}" ${isRequired ? 'required' : ''} onkeyup="updateDynamicUrl(${catIndex}, ${endpointIndex})" onchange="updateDynamicUrl(${catIndex}, ${endpointIndex})">
+                                          </div>`;
+                            });
+                        }
+                        html += `
+                                                        </div>
+                                                        <div class="flex gap-2">
+                                                            <button type="submit" class="cyber-button px-6 py-2.5 text-xs font-medium rounded-lg flex items-center">
+                                                                <span class="material-icons text-sm mr-1">send</span>
+                                                                EXECUTE
+                                                            </button>
+                                                            <button type="button" id="clear-${catIndex}-${endpointIndex}" onclick="clearResponse(${catIndex}, ${endpointIndex})" class="hidden bg-transparent border border-pink-500/50 text-pink-400 px-6 py-2.5 text-xs font-medium rounded-lg hover:bg-pink-500/10 transition-all duration-300 flex items-center">
+                                                                <span class="material-icons text-sm mr-1">clear</span>
+                                                                CLEAR
+                                                            </button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>`;
+                    } else {
+                        html += `<div class="text-pink-400 text-xs p-4 bg-pink-500/10 border border-pink-500/30 rounded-lg flex items-center">
+                                    <span class="material-icons text-sm mr-2">error</span>
+                                    [ENDPOINT_OFFLINE] - Cannot execute
+                                </div>`;
+                    }
+
+                    html += `
+                                        <div id="response-${catIndex}-${endpointIndex}" class="hidden mt-4">
+                                            <div class="text-cyan-400 font-bold text-xs mb-3 flex items-center bg-cyan-500/10 p-2 rounded-lg border border-cyan-500/20">
+                                                <span class="material-icons text-sm mr-2">data_usage</span>
+                                                RESPONSE_DATA
+                                            </div>
+                                            <div class="bg-black/80 text-cyan-300 text-xs p-4 border border-cyan-500/30 rounded-lg digital-display">
+                                                <div class="max-h-80 overflow-auto scrollbar-hide" id="response-content-${catIndex}-${endpointIndex}"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>`;
+                });
+                html += `</div></div></div>`;
+            });
+            apiList.innerHTML = html;
+            
+            // Store references after loading
+            allApiItems = document.querySelectorAll('.api-item');
+            allCategories = document.querySelectorAll('.category-group');
+            
+        } catch (error) {
+            apiList.innerHTML = '<p class="text-pink-500 bg-pink-500/10 p-4 rounded-lg border border-pink-500/30">[ERROR] Failed to load API data.</p>';
+            console.error('Error loading API data:', error);
+        }
+    }
+    
+    // Function to load and render notifications
+    async function loadNotifications() {
+        const notificationsList = document.getElementById('notifications-list');
+        const unreadCountBadge = document.getElementById('unread-count');
+        try {
+            const response = await fetch('/notifications.json');
+            const notifications = await response.json();
+
+            notificationsList.innerHTML = '';
+            let unreadCount = 0;
+
+            notifications.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            notifications.forEach(notif => {
+                if (!notif.read) {
+                    unreadCount++;
+                }
+                const notifElement = document.createElement('div');
+                notifElement.className = `bg-black/50 border border-cyan-500/30 p-4 text-xs rounded-lg hover:border-pink-500/30 transition-all duration-300 digital-display ${notif.read ? 'opacity-50' : ''}`;
+                notifElement.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <p class="font-bold text-cyan-400 mb-1 flex items-center">
+                                ${!notif.read ? '<span class="led w-1.5 h-1.5 mr-2"></span>' : ''}
+                                ${notif.title}
+                            </p>
+                            <p class="text-cyan-600">${notif.message}</p>
+                        </div>
+                        <div class="flex items-center ml-4 flex-shrink-0">
+                            <span class="text-cyan-700 bg-cyan-500/5 px-2 py-1 rounded border border-cyan-500/20 text-[10px]">${new Date(notif.date).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                        </div>
+                    </div>
+                `;
+                notificationsList.appendChild(notifElement);
+            });
+
+            if (unreadCount > 0) {
+                unreadCountBadge.querySelector('span:last-child').textContent = `${unreadCount} NEW`;
+                unreadCountBadge.classList.remove('hidden');
+            }
+
+        } catch (error) {
+            notificationsList.innerHTML = '<p class="text-pink-500 text-xs bg-pink-500/10 p-4 rounded-lg border border-pink-500/30">[ERROR] Failed to load notifications.</p>';
+            console.error('Error loading notifications:', error);
+        }
+    }
+
+    // Search functionality with improved handling
+    document.getElementById('searchInput').addEventListener('input', function(e) {
+        const searchTerm = e.target.value;
+        performSearch(searchTerm);
+        updateClearButton(searchTerm);
     });
 
+    // Handle backspace/delete key to show all when empty
+    document.getElementById('searchInput').addEventListener('keyup', function(e) {
+        if (this.value === '') {
+            performSearch('');
+            updateClearButton('');
+        }
+    });
 
     // Initial load
     document.addEventListener('DOMContentLoaded', () => {
         loadApis();
         loadNotifications();
+        
+        // Close modal with ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeDonationModal();
+            }
+        });
+        
+        // Initial clear button state
+        updateClearButton('');
     });
-</script>
-
+    </script>
 </body>
 </html>
