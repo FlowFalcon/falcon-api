@@ -26,7 +26,7 @@ const detectSource = (url) => {
     if (u.includes(key)) return SOURCE_LABEL_MAP[key];
   }
   return 'Unknown';
-}
+};
 
 const extractVideoId = (url, source) => {
   try {
@@ -49,7 +49,7 @@ const extractVideoId = (url, source) => {
     }
   } catch {}
   return null;
-}
+};
 
 module.exports = (app) => {
 
