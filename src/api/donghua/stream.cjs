@@ -1,4 +1,4 @@
-const axios = require('axios');
+const { fetchSite } = require('./fetchSite');
 const cheerio = require('cheerio');
 
 const BASE_URL = "https://anichin.moe";
@@ -7,148 +7,127 @@ const getCreator = () => {
   return (global.apikey && global.apikey[0]) ? global.apikey[0] : 'AxlyDev';
 };
 
+// ponytail: only sources anichin.cafe actually serves via select.mirror.
+// add new source only when a new <option value="...base64..."> label appears.
+const SOURCE_LABEL_MAP = {
+  'dailymotion': 'Dailymotion',
+  'ok.ru':       'OK.ru',
+  'rumble':      'Rumble',
+  'abyssplayer': 'AbyssPlayer',
+  'videoplayer': 'VideoPlayer.vip',
+  'streamtape':  'Streamtape',
+  'mp4upload':   'MP4Upload',
+  'youtube':     'YouTube'
+};
+
+const detectSource = (url) => {
+  const u = (url || '').toLowerCase();
+  for (const key of Object.keys(SOURCE_LABEL_MAP)) {
+    if (u.includes(key)) return SOURCE_LABEL_MAP[key];
+  }
+  return 'Unknown';
+};
+
+const extractVideoId = (url, source) => {
+  try {
+    const u = new URL(url);
+    if (source === 'Dailymotion') {
+      // geo.dailymotion.com/player/xid0t.html?video=XXXX
+      // www.dailymotion.com/embed/video/XXXX
+      const v = u.searchParams.get('video');
+      if (v) return v;
+      const m = u.pathname.match(/\/video\/([a-zA-Z0-9]+)/);
+      if (m) return m[1];
+    }
+    if (source === 'OK.ru') {
+      const m = u.pathname.match(/videoembed\/(\d+)/);
+      if (m) return m[1];
+    }
+    if (source === 'Rumble') {
+      const m = u.pathname.match(/embed\/(v[a-zA-Z0-9]+)/);
+      if (m) return m[1];
+    }
+  } catch {}
+  return null;
+};
+
 module.exports = (app) => {
-  
+
   app.get('/donghua/stream', async (req, res) => {
-    const { slug } = req.query;
-    
+    const { slug, server } = req.query;
+
     if (!slug) {
       return res.status(400).json({
         status: false,
         creator: getCreator(),
-        error: 'Parameter "slug" diperlukan (contoh: ?slug=tales-of-herding-gods-episode-85-subtitle-indonesia)'
+        error: 'Parameter "slug" diperlukan (contoh: ?slug=peerless-martial-spirit-episode-440-subtitle-indonesia)'
       });
     }
-    
+
     try {
-      const { data } = await axios.get(`${BASE_URL}/${slug}/`, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        },
-        timeout: 15000
-      });
-      
+      const data = await fetchSite(`${BASE_URL}/${slug}/`);
+
       const $ = cheerio.load(data);
-      
-      let streamUrl = null;
-      let videoId = null;
-      let source = null;
-      
-      // ─── 1. Cari iframe Cakrawalaweb (PLAYER UTAMA) ───
-      $('iframe[src*="player.cakrawalaweb.site"]').each((_, el) => {
-        const src = $(el).attr('src');
-        if (src) {
-          const urlParam = src.match(/url=([^&]+)/);
-          if (urlParam) {
-            const encodedUrl = urlParam[1];
-            let decodedUrl = '';
-            try {
-              decodedUrl = Buffer.from(encodedUrl, 'base64').toString('utf-8');
-            } catch {
-              decodedUrl = encodedUrl;
-            }
-            
-            // Detect platform dari decoded URL
-            if (decodedUrl.includes('dailymotion')) {
-              const match = decodedUrl.match(/dailymotion\.com\/video\/([a-zA-Z0-9]+)/);
-              if (match) {
-                videoId = match[1];
-                streamUrl = `https://www.dailymotion.com/embed/video/${videoId}?ui=0&autoplay=1`;
-                source = 'Dailymotion';
-              }
-            } else if (decodedUrl.includes('ok.ru')) {
-              const match = decodedUrl.match(/ok\.ru\/video\/(\d+)/);
-              if (match) {
-                videoId = match[1];
-                streamUrl = `https://ok.ru/videoembed/${videoId}`;
-                source = 'OK.ru';
-              }
-            } else {
-              streamUrl = src;
-              source = 'Cakrawalaweb';
-            }
-          }
-          return false;
+
+      const servers = [];
+
+      // ─── Ambil SEMUA server dari <select class="mirror"> ───
+      // anichin.cafe menyimpan iframe src di <option value="<base64>"> per server.
+      // Decode → dapat URL embed langsung dari sumber (dailymotion/ok.ru/rumble/dll).
+      // URL upstream resmi → tidak diblokir seperti iframe wrapper pihak ketiga.
+      $('select.mirror option').each((_, el) => {
+        const $opt = $(el);
+        const raw = $opt.attr('value');
+        if (!raw) return;                       // skip "Select Video Server"
+
+        let decoded = '';
+        try {
+          decoded = Buffer.from(raw, 'base64').toString('utf-8');
+        } catch {
+          return;
         }
+
+        const $frame = cheerio.load(decoded);
+        const src = $frame('iframe').attr('src');
+        if (!src) return;
+
+        const label = $opt.text().trim().replace(/\s+/g, ' ') || null;
+        const source = detectSource(src);
+        const videoId = extractVideoId(src, source);
+
+        let watchUrl = null;
+        if (source === 'OK.ru' && videoId)            watchUrl = `https://ok.ru/video/${videoId}`;
+        else if (source === 'Dailymotion' && videoId) watchUrl = `https://www.dailymotion.com/video/${videoId}`;
+        else if (source === 'Rumble' && videoId)      watchUrl = `https://rumble.com/${videoId}`;
+
+        servers.push({
+          label: label,
+          source: source,
+          video_id: videoId,
+          embed_url: src,
+          watch_url: watchUrl || src
+        });
       });
-      
-      // ─── 2. Cari iframe Dailymotion ──────────────────
-      if (!streamUrl) {
-        $('iframe[src*="dailymotion.com"]').each((_, el) => {
+
+      // ─── Fallback 1: iframe langsung di halaman (tanpa base64) ───
+      if (servers.length === 0) {
+        $('#embed_holder iframe').each((_, el) => {
           const src = $(el).attr('src');
-          if (src) {
-            const match = src.match(/video=([a-zA-Z0-9]+)/);
-            if (match) {
-              videoId = match[1];
-              streamUrl = `https://www.dailymotion.com/embed/video/${videoId}?ui=0&autoplay=1`;
-              source = 'Dailymotion';
-            }
-            return false;
-          }
-        });
-      }
-      
-      // ─── 3. Cari iframe OK.ru ──────────────────────
-      if (!streamUrl) {
-        $('iframe[src*="ok.ru"]').each((_, el) => {
-          const src = $(el).attr('src');
-          if (src) {
-            streamUrl = src;
-            source = 'OK.ru';
-            const match = src.match(/videoembed\/(\d+)/);
-            if (match) videoId = match[1];
-          }
+          if (!src) return;
+          const source = detectSource(src);
+          const videoId = extractVideoId(src, source);
+          servers.push({
+            label: null,
+            source: source,
+            video_id: videoId,
+            embed_url: src,
+            watch_url: src
+          });
           return false;
         });
       }
-      
-      // ─── 4. Cari iframe Rumble ──────────────────────
-      if (!streamUrl) {
-        $('iframe[src*="rumble.com"]').each((_, el) => {
-          const src = $(el).attr('src');
-          if (src) {
-            streamUrl = src;
-            source = 'Rumble';
-            const match = src.match(/embed\/([a-zA-Z0-9]+)/);
-            if (match) videoId = match[1];
-          }
-          return false;
-        });
-      }
-      
-      // ─── 5. Fallback: cari link Dailymotion ──────
-      if (!streamUrl) {
-        $('a[href*="dailymotion.com"]').each((_, el) => {
-          const href = $(el).attr('href');
-          if (href) {
-            const match = href.match(/dailymotion\.com\/video\/([a-zA-Z0-9]+)/);
-            if (match) {
-              videoId = match[1];
-              streamUrl = `https://www.dailymotion.com/embed/video/${videoId}?ui=0&autoplay=1`;
-              source = 'Dailymotion';
-            }
-          }
-          return false;
-        });
-      }
-      
-      // ─── 6. Fallback: cari link OK.ru ──────────────
-      if (!streamUrl) {
-        $('a[href*="ok.ru"]').each((_, el) => {
-          const href = $(el).attr('href');
-          if (href) {
-            const match = href.match(/ok\.ru\/video\/(\d+)/);
-            if (match) {
-              videoId = match[1];
-              streamUrl = `https://ok.ru/videoembed/${videoId}`;
-              source = 'OK.ru';
-            }
-          }
-          return false;
-        });
-      }
-      
-      if (!streamUrl) {
+
+      if (servers.length === 0) {
         return res.status(404).json({
           status: false,
           creator: getCreator(),
@@ -156,35 +135,31 @@ module.exports = (app) => {
           note: 'Pastikan slug episode benar'
         });
       }
-      
-      const title = $('.entry-title').text().trim() || 'Donghua Episode';
-      
-      let watchUrl = null;
-      if (source === 'OK.ru' && videoId) {
-        watchUrl = `https://ok.ru/video/${videoId}`;
-      } else if (source === 'Dailymotion' && videoId) {
-        watchUrl = `https://www.dailymotion.com/video/${videoId}`;
-      } else if (source === 'Rumble' && videoId) {
-        watchUrl = `https://rumble.com/v${videoId}`;
-      } else if (source === 'Cakrawalaweb') {
-        watchUrl = streamUrl;
-      }
-      
+
+      const title = $('.entry-title').text().trim()
+                  || $('h1').first().text().trim()
+                  || 'Donghua Episode';
+
+      // Filter ?server= jika user minta spesifik (case-insensitive substring match).
+      const filtered = server
+        ? servers.filter(s => (s.source || '').toLowerCase().includes(String(server).toLowerCase()))
+        : servers;
+
       res.json({
         status: true,
         creator: getCreator(),
         result: {
           title: title,
-          source: source,
-          video_id: videoId,
-          embed_url: streamUrl,
-          watch_url: watchUrl || streamUrl
+          slug: slug,
+          url: `${BASE_URL}/${slug}/`,
+          total_servers: filtered.length,
+          servers: filtered
         }
       });
-      
+
     } catch (error) {
       console.error('[Donghua Stream Error]', error.message);
-      
+
       if (error.response?.status === 404) {
         return res.status(404).json({
           status: false,
@@ -193,7 +168,7 @@ module.exports = (app) => {
           note: 'Periksa kembali slug episode'
         });
       }
-      
+
       res.status(500).json({
         status: false,
         creator: getCreator(),

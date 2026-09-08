@@ -1,4 +1,4 @@
-const axios = require('axios');
+const { fetchSite } = require('./fetchSite');
 const cheerio = require('cheerio');
 
 const BASE_URL = "https://anichin.moe";
@@ -12,12 +12,7 @@ module.exports = (app) => {
   app.get('/donghua/popular', async (req, res) => {
     try {
       // Ambil halaman utama anichin.moe
-      const { data } = await axios.get(BASE_URL, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-        },
-        timeout: 15000
-      });
+      const data = await fetchSite(BASE_URL);
       
       const $ = cheerio.load(data);
       

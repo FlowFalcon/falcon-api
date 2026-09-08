@@ -1,4 +1,4 @@
-const axios = require('axios');
+const { fetchSite } = require('./fetchSite');
 const cheerio = require('cheerio');
 
 const BASE_URL = "https://anichin.moe";
@@ -20,12 +20,7 @@ module.exports = (app) => {
         const url = `${BASE_URL}/ongoing/page/${currentPage}/`;
         console.log(`[Ongoing] Scraping page ${currentPage}...`);
         
-        const { data } = await axios.get(url, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-          },
-          timeout: 15000
-        });
+        const data = await fetchSite(url);
         
         const $ = cheerio.load(data);
         

@@ -1,4 +1,4 @@
-const axios = require('axios');
+const { fetchSite } = require('./fetchSite');
 const cheerio = require('cheerio');
 
 const BASE_URL = "https://anichin.moe";
@@ -26,14 +26,7 @@ module.exports = (app) => {
       const searchUrl = `${BASE_URL}/?s=${encodeURIComponent(q)}`;
       console.log(`[Search] Scraping "${q}"...`);
 
-      const { data } = await axios.get(searchUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          'Accept-Language': 'id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7'
-        },
-        timeout: 15000
-      });
+      const data = await fetchSite(searchUrl);
 
       const $ = cheerio.load(data);
 
