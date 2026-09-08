@@ -53,7 +53,7 @@ module.exports = (app) => {
         });
         
         // Cek apakah ada halaman selanjutnya
-        hasNext = $('.pagination .nextpage').length > 0;
+        hasNext = $('.next.page-numbers').length > 0;
         currentPage++;
         
         // Safety break (max 50 pages)

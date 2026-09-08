@@ -21,6 +21,11 @@ module.exports = (app) => {
       
       const $ = cheerio.load(data);
       const results = [];
+
+      // NOTE 2026-09-08: /upcoming-donghua/ di anichin.moe sudah mati —
+      // server return 200 tapi isinya homepage (soft-404, 0 item body).
+      // Selector di bawah tetap jalan bila kategori dihidupkan lagi.
+      // Sementara itu pakai /donghua/schedule untuk jadwal rilis.
       
       // Parse daftar upcoming donghua
       $('.listupd .bs').each((_, el) => {
@@ -49,7 +54,8 @@ module.exports = (app) => {
         status: true,
         creator: getCreator(),
         total: results.length,
-        results: results
+        results: results,
+        note: results.length === 0 ? 'Kategori upcoming mati di sumber (anichin). Pakai /donghua/schedule untuk jadwal rilis.' : undefined
       });
       
     } catch (error) {
