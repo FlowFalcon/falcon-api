@@ -1,4 +1,4 @@
-const { fetchSite } = require('./fetchSite');
+const { fetchSite, mapUpstreamError } = require('./fetchSite');
 const cheerio = require('cheerio');
 
 const BASE_URL = "https://donghub.vip";
@@ -76,10 +76,11 @@ module.exports = (app) => {
 
     } catch (error) {
       console.error('[Search Error]', error.message);
-      res.status(500).json({
+      const mapped = mapUpstreamError(error);
+      res.status(mapped.code).json({
         status: false,
         creator: getCreator(),
-        error: error.message
+        ...mapped.body
       });
     }
   });
