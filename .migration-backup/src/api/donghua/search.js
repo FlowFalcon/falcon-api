@@ -1,7 +1,7 @@
 const { fetchSite } = require('./fetchSite');
 const cheerio = require('cheerio');
 
-const BASE_URL = "https://anichin.cafe";
+const BASE_URL = "https://donghub.vip";
 
 const getCreator = () => {
   return (global.apikey && global.apikey[0]) ? global.apikey[0] : 'AxlyDev';
@@ -21,8 +21,7 @@ module.exports = (app) => {
     }
 
     try {
-      // anichin.cafe search endpoint: ?s=... (root atau /page/N/)
-      // Page 2+ jarang return 200 → cukup 1 page fetch, simpan 1 request.
+      // donghub search endpoint: ?s=... (WordPress standar, 1 page cukup)
       const searchUrl = `${BASE_URL}/?s=${encodeURIComponent(q)}`;
       console.log(`[Search] Scraping "${q}"...`);
 
@@ -33,11 +32,13 @@ module.exports = (app) => {
       const seen = new Set();
       const results = [];
 
-      $('.listupd article.bs').each((_, el) => {
+      $('.listupd article.bs, .listupd .bs').each((_, el) => {
         const $el = $(el);
         const $a = $el.find('.bsx a').first();
         const link = $a.attr('href') || "";
-        const title = $el.find('.tt').text().trim() || "";
+        const title = $a.attr('title')
+          || $el.find('.tt').clone().children().remove().end().text().trim()
+          || $el.find('.tt').text().trim() || "";
         if (!title || !link) return;
 
         const type = $el.find('.typez').text().trim() || null;
