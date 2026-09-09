@@ -82,7 +82,6 @@ module.exports = (app) => {
             else if (embedUrl.includes('play.d.tube') || embedUrl.includes('d.tube')) platform = 'D-Tube';
             else if (embedUrl.includes('youtube') || embedUrl.includes('youtu.be')) platform = 'YouTube';
             else if (embedUrl.includes('abyssplayer')) platform = 'Abyssplayer';
-            else if (embedUrl.includes('abyssplayer')) platform = 'Abyssplayer';
             else if (embedUrl.includes('rpmvid')) platform = 'RPMShare';
             else if (embedUrl.includes('rubyvidhub')) platform = 'Streamruby';
             else if (embedUrl.includes('playmogo')) platform = 'Doods';
