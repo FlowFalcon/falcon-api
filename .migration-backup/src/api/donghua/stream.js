@@ -1,22 +1,26 @@
 const { fetchSite } = require('./fetchSite');
 const cheerio = require('cheerio');
 
-const BASE_URL = "https://anichin.cafe";
+const BASE_URL = "https://donghub.vip";
 
 const getCreator = () => {
   return (global.apikey && global.apikey[0]) ? global.apikey[0] : 'AxlyDev';
 };
 
-// ponytail: only sources anichin.cafe actually serves via select.mirror.
+// ponytail: only sources donghub actually serves via select.mirror.
 // add new source only when a new <option value="...base64..."> label appears.
 const SOURCE_LABEL_MAP = {
   'dailymotion': 'Dailymotion',
   'ok.ru':       'OK.ru',
+  'okru':        'OK.ru',
   'rumble':      'Rumble',
+  'd.tube':      'D-Tube',
+  'play.d.tube': 'D-Tube',
   'abyssplayer': 'AbyssPlayer',
   'videoplayer': 'VideoPlayer.vip',
   'streamtape':  'Streamtape',
   'mp4upload':   'MP4Upload',
+  'morencius':   'Vidhide',
   'youtube':     'YouTube'
 };
 
@@ -47,6 +51,11 @@ const extractVideoId = (url, source) => {
       const m = u.pathname.match(/embed\/(v[a-zA-Z0-9]+)/);
       if (m) return m[1];
     }
+    if (source === 'D-Tube') {
+      // play.d.tube/?v=UUID
+      const v = u.searchParams.get('v');
+      if (v) return v;
+    }
   } catch {}
   return null;
 };
@@ -72,8 +81,8 @@ module.exports = (app) => {
       const servers = [];
 
       // ─── Ambil SEMUA server dari <select class="mirror"> ───
-      // anichin.cafe menyimpan iframe src di <option value="<base64>"> per server.
-      // Decode → dapat URL embed langsung dari sumber (dailymotion/ok.ru/rumble/dll).
+      // donghub menyimpan iframe src di <option value="<base64>"> per server.
+      // Decode → dapat URL embed langsung dari sumber (dailymotion/dtube/okru/dll).
       // URL upstream resmi → tidak diblokir seperti iframe wrapper pihak ketiga.
       $('select.mirror option').each((_, el) => {
         const $opt = $(el);
@@ -99,6 +108,7 @@ module.exports = (app) => {
         if (source === 'OK.ru' && videoId)            watchUrl = `https://ok.ru/video/${videoId}`;
         else if (source === 'Dailymotion' && videoId) watchUrl = `https://www.dailymotion.com/video/${videoId}`;
         else if (source === 'Rumble' && videoId)      watchUrl = `https://rumble.com/${videoId}`;
+        else if (source === 'D-Tube' && videoId)      watchUrl = `https://play.d.tube/?v=${videoId}`;
 
         servers.push({
           label: label,

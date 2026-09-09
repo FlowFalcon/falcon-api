@@ -1,65 +1,65 @@
 const { fetchSite } = require('./fetchSite');
 const cheerio = require('cheerio');
 
-const BASE_URL = "https://anichin.cafe";
+const BASE_URL = "https://donghub.vip";
 
 const getCreator = () => {
   return (global.apikey && global.apikey[0]) ? global.apikey[0] : 'AxlyDev';
 };
 
 module.exports = (app) => {
-  
+
   app.get('/donghua/popular', async (req, res) => {
     try {
-      // Ambil halaman utama anichin.moe
+      // Ambil halaman utama donghub
       const data = await fetchSite(BASE_URL);
-      
+
       const $ = cheerio.load(data);
-      
+
       // Cari section "Terpopuler Hari Ini"
       const popularList = [];
-      
+
       // Cari div .popularslider .popconslide .bs
       $('.popularslider .popconslide .bs').each((_, el) => {
         const $el = $(el);
-        
+
         // Ambil link dan judul
         const $link = $el.find('.bsx a');
         const href = $link.attr('href');
         const title = $link.attr('title') || $el.find('.tt h2').text().trim() || $el.find('.tt').text().trim() || 'Unknown';
-        
+
         // Ambil judul pendek (dari .tt)
         const shortTitle = $el.find('.tt').contents().first().text().trim() || title;
-        
+
         // Ambil gambar
         const $img = $el.find('img.ts-post-image');
-        const image = $img.attr('src') || null;
+        const image = $img.attr('src') || $img.attr('data-src') || null;
         const imageAlt = $img.attr('alt') || title;
-        
+
         // Ambil episode
         const episodeText = $el.find('.bt .epx').text().trim() || '';
         const episode = episodeText.replace('Ep', '').trim() || null;
-        
+
         // Ambil status subtitle
         const subStatus = $el.find('.bt .sb').text().trim() || 'Sub';
-        
+
         // Ambil tipe (Donghua/Anime)
         const type = $el.find('.typez').text().trim() || 'Donghua';
-        
+
         // Cek apakah ada badge hot
         const isHot = $el.find('.hotbadge').length > 0;
-        
+
         // Ambil slug dari href
-        const slug = href ? href.replace(/^\/|\/$/g, '') : null;
-        
+        const slug = href ? href.replace(/^https?:\/\/[^/]+/, '').replace(/^\/|\/$/g, '') : null;
+
         // Ambil rel (ID)
         const rel = $link.attr('rel') || null;
-        
+
         popularList.push({
           title: title,
           short_title: shortTitle,
           slug: slug,
-          url: href ? `${BASE_URL}${href}` : null,
+          url: href && href.startsWith('http') ? href : (href ? `${BASE_URL}${href}` : null),
           episode: episode,
           type: type,
           sub_status: subStatus,
@@ -69,7 +69,7 @@ module.exports = (app) => {
           rel: rel
         });
       });
-      
+
       if (popularList.length === 0) {
         return res.status(404).json({
           status: false,
@@ -78,10 +78,10 @@ module.exports = (app) => {
           note: 'Mungkin struktur website berubah'
         });
       }
-      
+
       // Ambil judul section
       const sectionTitle = $('.releases.hothome h2').text().trim() || 'Terpopuler Hari Ini';
-      
+
       res.json({
         status: true,
         creator: getCreator(),
@@ -92,10 +92,10 @@ module.exports = (app) => {
           list: popularList
         }
       });
-      
+
     } catch (error) {
       console.error('[Donghua Popular Error]', error.message);
-      
+
       res.status(500).json({
         status: false,
         creator: getCreator(),
