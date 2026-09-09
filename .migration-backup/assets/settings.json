@@ -1,0 +1,872 @@
+{
+  "name": "Axly-Api",
+  "version": "v2.0",
+  "description": "simple and powerful tools API and easy to use",
+  "bannerImage": "/assets/banner.jpg",
+  "header": {
+    "status": "Online!"
+  },
+  "apiSettings": {
+    "creator": "AxlyDev",
+    "apikey": [
+      "axly-api"
+    ]
+  },
+  "categories": [
+{
+  "name": "OpenAI",
+  "items": [
+    {
+      "name": "OpenAI Llama3",
+      "desc": "Chat dengan model Llama3-8B-8192 Cepat dan cerdas.",
+      "path": "/ai/openai?text=",
+      "status": "ready",
+      "params": {
+        "text": "Teks atau pertanyaan yang ingin diajukan ke AI."
+      }
+    },
+    {
+  "name": "FeelBetter AI",
+  "desc": "Chat dengan AI therapist (gratis, tanpa login). Pakai parameter text untuk bertanya.",
+  "path": "/ai/feelbetter?text=",
+  "status": "ready",
+  "params": {
+    "text": "Pesan atau pertanyaan yang ingin disampaikan (contoh: halo, siapa kamu?)",
+    "sid": "(Opsional) Session ID dari response sebelumnya untuk lanjutkan percakapan"
+  }
+    },
+{
+  "name": "Easemate AI Edit Image",
+  "desc": "Edit gambar dengan AI (ubah style, warna, dll). Tambahkan &raw=true untuk hasil langsung gambar",
+  "path": "/ai/easemate?prompt=&url=",
+  "status": "ready",
+  "params": {
+    "prompt": "Deskripsi perubahan (wajib)",
+    "url": "URL gambar (wajib untuk GET)",
+    "raw": "true/false - true = langsung dapet gambar, false = dapet URL"
+  }
+},
+{
+  "name": "Uncensored AI",
+  "desc": "AI chat tanpa sensor (gratis, pakai web scraping uncensored.chat)",
+  "path": "/ai/uncensored?text=",
+  "status": "ready",
+  "params": {
+    "text": "Pertanyaan atau teks yang ingin ditanyakan ke AI"
+  }
+},
+    {
+  "name": "Nano Banana AI",
+  "desc": "Edit gambar dengan prompt (ubah gaya, warna, latar, dll)",
+  "path": "/ai/nanobanana?url=",
+  "status": "ready",
+  "params": {
+    "url": "URL gambar yang mau diedit (opsional, bisa juga upload file via POST)",
+    "prompt": "Deskripsi perubahan yang diinginkan"
+  }
+    },
+    {
+  "name": "Text to Image",
+  "desc": "Generate gambar dari teks pake AI (gratis, tanpa API key)",
+  "path": "/ai/text2image?prompt=",
+  "status": "ready",
+  "params": {
+    "prompt": "Deskripsi gambar yang mau dibuat"
+  }
+    },
+    {
+      "name": "Overchat",
+      "desc": "Overchat AI (Claude Haiku) - Chat AI gratis tanpa login",
+      "path": "/ai/overchat?text=",
+      "status": "ready",
+      "params": {
+        "text": "Teks atau pertanyaan untuk AI Overchat"
+      }
+    }
+  ]
+},
+{
+  "name": "Maker",
+  "image": "/api/placeholder/800/200",
+  "items": [
+    {
+      "name": "Brat Image Generator",
+      "desc": "Buat gambar teks gaya BRAT",
+      "path": "/maker/brat?text=",
+      "status": "ready",
+      "params": {
+        "text": "Teks yang mau dijadikan gambar"
+      }
+    },
+{
+  "name": "Smeme Generator",
+  "desc": "Buat meme dengan teks atas/bawah (font Impact klasik)",
+  "path": "/maker/smeme?top=&bottom=&url=",
+  "status": "ready",
+  "params": {
+    "top": "Teks di atas (contoh: Halo)",
+    "bottom": "Teks di bawah (contoh: Guyc)",
+    "url": "URL gambar (opsional, bisa upload file via POST)",
+    "fontSize": "Ukuran font (opsional, auto jika tidak diisi)",
+    "strokeWidth": "Tebal outline (opsional)"
+  }
+},
+    {
+  "name": "WebP to Video(tovid)",
+  "desc": "Konversi file WebP animasi ke MP4 (upload file atau URL)",
+  "path": "/maker/tovid?url=",
+  "status": "ready",
+  "params": {
+    "url": "URL file WebP (opsional, bisa juga upload file via POST)"
+  }
+    },
+{
+  "name": "To Figure AI",
+  "desc": "Ubah gambar jadi style figure/illustrasi (masukkan URL gambar)",
+  "path": "/maker/tofigure?url=",
+  "method": "GET",
+  "status": "ready",
+  "params": {
+    "url": "URL gambar yang mau diubah"
+  }
+},
+    {
+      "name": "To Anime AI",
+      "desc": "Ubah gambar jadi style anime",
+      "path": "/maker/toanime?url=",
+      "status": "ready",
+      "params": {
+        "url": "URL gambar yang mau diubah"
+      }
+    },
+    {
+  "name": "ToHitam - Hitamkan Kulit",
+  "desc": "Ubah warna kulit karakter menjadi hitam menggunakan AI - langsung return gambar",
+  "path": "/maker/tohitam?url=",
+  "method": "GET",
+  "status": "ready",
+  "params": {
+    "url": "URL gambar yang mau diubah warna kulitnya"
+  }
+    },
+    {
+  "name": "QC Image Generator",
+  "desc": "Buat gambar QC dengan teks, nama, avatar, dan warna",
+  "path": "/maker/qc?text=&name=&avatar=&color=",
+  "status": "ready",
+  "params": {
+    "text": "Teks utama (wajib)",
+    "name": "Nama pengguna (opsional, default: AxlyDev)",
+    "avatar": "URL avatar (opsional)",
+    "color": "Warna latar: putih, hitam (opsional, default: putih)"
+  }
+    },
+    {
+  "name": "Fake Lobby ML Generator",
+  "desc": "Buat gambar fake lobby Mobile Legends",
+  "path": "/maker/fakelobyml?avatar=&nickname=",
+  "status": "ready",
+  "params": {
+    "avatar": "URL avatar (wajib)",
+    "nickname": "Nickname pemain (wajib)"
+  }
+    },
+    {
+  "name": "IQC Image Generator",
+  "desc": "Buat gambar teks gaya IQC",
+  "path": "/maker/iqc?text=",
+  "status": "ready",
+  "params": {
+    "text": "Teks yang mau dijadikan gambar"
+  }
+    },
+    {
+      "name": "Brat Video Generator",
+      "desc": "Buat video teks gaya BRAT",
+      "path": "/maker/bratvid?text=",
+      "status": "ready",
+      "params": {
+        "text": "Teks yang mau dijadikan video"
+      }
+    }
+  ]
+},
+    {
+  "name": "Stalker",
+  "image": "/api/placeholder/800/200",
+  "items": [
+{
+  "name": "Genshin Impact Stalker",
+  "desc": "Cek profil player Genshin Impact (UID)",
+  "path": "/stalker/genshin?id=",
+  "status": "ready",
+  "params": {
+    "id": "UID Genshin Impact (9 digit)"
+  }
+},
+    {
+  "name": "Roblox Stalker",
+  "desc": "Cek profil player Roblox (username)",
+  "path": "/stalker/roblox?username=",
+  "status": "ready",
+  "params": {
+    "username": "Username Roblox (contoh: bulderman)"
+  }
+    },
+{
+  "name": "TikTok Stalker",
+  "desc": "Cek profil TikTok (nickname, followers, following, total likes, verified, bio, dll)",
+  "path": "/stalk/tiktok?user=",
+  "status": "ready",
+  "params": {
+    "user": "Username TikTok (contoh: khaby.lame atau @khaby.lame atau link profil)"
+  }
+},
+    {
+  "name": "Mobile Legends Stalker",
+  "desc": "Cek profil player Mobile Legends (ID & Zone)",
+  "path": "/stalker/mlbb?id=&zone=",
+  "status": "ready",
+  "params": {
+    "id": "ID player Mobile Legends",
+    "zone": "Zone ID player (contoh: 11449)"
+  }
+    },
+    {
+      "name": "Free Fire Stalk",
+      "desc": "Cek profil player Free Fire (region otomatis dari UID)",
+      "path": "/stalk/ff?uid=",
+      "status": "ready",
+      "params": {
+        "uid": "UID Free Fire player"
+      }
+    }
+  ]
+    },
+    {
+  "name": "Donghua",
+  "image": "/api/placeholder/800/200",
+  "items": [
+    {
+  "name": "Completed",
+  "desc": "Daftar semua donghua yang sudah tamat (completed) dari Anichin.moe (otomatis ambil semua halaman)",
+  "path": "/donghua/completed",
+  "status": "ready"
+    },
+    {
+  "name": "Upcoming",
+  "desc": "Daftar donghua yang akan datang (upcoming) dari Anichin.moe",
+  "path": "/donghua/upcoming",
+  "status": "ready"
+    },
+    {
+  "name": "Ongoing",
+  "desc": "Daftar semua donghua yang sedang tayang (ongoing) dari Anichin.moe (otomatis ambil semua halaman)",
+  "path": "/donghua/ongoing",
+  "status": "ready"
+    },
+    {
+  "name": "Drop",
+  "desc": "Daftar semua donghua yang hiatus/berhenti (drop) dari Anichin.moe (otomatis ambil semua halaman)",
+  "path": "/donghua/drop",
+  "status": "ready"
+    },
+    {
+  "name": "Schedule",
+  "desc": "Jadwal rilis donghua per hari (Senin - Minggu) dari Anichin.moe",
+  "path": "/donghua/schedule",
+  "status": "ready"
+    },
+    {
+  "name": "Donghua Terpopuler",
+  "desc": "Daftar donghua terpopuler hari ini dari Anichin.moe",
+  "path": "/donghua/popular",
+  "status": "ready"
+    },
+{
+  "name": "Detail",
+  "desc": "Melihat detail lengkap donghua (sinopsis, genre, total episode, daftar episode)",
+  "path": "/donghua/detail?slug=",
+  "status": "ready",
+  "params": {
+    "slug": "Slug donghua dari Anichin (contoh: renegade-immortal)"
+  }
+},
+    {
+  "name": "Donghua Servers",
+  "desc": "Dapatkan semua pilihan server streaming dari episode Anichin.moe (OK.ru, Dailymotion, Rumble, D-Tube, Abyssplayer, dll)",
+  "path": "/donghua/servers?slug=",
+  "status": "ready",
+  "params": {
+    "slug": "Slug episode dari Anichin (contoh: renegade-immortal-episode-148-subtitle-indonesia)"
+  }
+    },
+    {
+  "name": "Donghua Download",
+  "desc": "Dapatkan link download episode dari Anichin.moe (Mirrored, Pixeldrain, Terabox) per kualitas (360p, 480p, 720p, 1080p, 4K)",
+  "path": "/donghua/download?slug=",
+  "status": "ready",
+  "params": {
+    "slug": "Slug episode dari Anichin (contoh: renegade-immortal-episode-148-subtitle-indonesia)"
+  }
+    },
+    {
+  "name": "Search",
+  "desc": "Mencari donghua/anime di Anichin.moe (otomatis ambil semua halaman hasil)",
+  "path": "/donghua/search?q=",
+  "status": "ready",
+  "params": {
+    "q": "Judul donghua yang ingin dicari (contoh: renegade immortal)"
+  }
+},
+        {
+          "name": "Stream",
+          "desc": "Streaming donghua dari Anichin.moe (Dailymotion embed bersih, tanpa iklan)",
+          "path": "/donghua/stream?slug=",
+          "status": "ready",
+          "params": {
+            "slug": "Slug episode dari Anichin (contoh: tales-of-herding-gods-episode-85-subtitle-indonesia)"
+          }
+        }
+  ]
+    },
+    {
+      "name": "Anime",
+      "items": [
+        {
+  "name": "Animasu Search",
+  "desc": "Mencari anime di Animasu.work (support pagination)",
+  "path": "/anime/animasu/search?q=&page=",
+  "status": "ready",
+  "params": {
+    "q": "Judul anime yang ingin dicari (contoh: one punch man)"
+  }
+        },
+        {
+  "name": "Animasu Updates",
+  "desc": "Semua update anime terbaru dari Cbox Animasu (tanpa limit)",
+  "path": "/anime/animasu/updates",
+  "status": "ready"
+        },
+        {
+  "name": "Animasu Schedule",
+  "desc": "Jadwal rilis anime dari Animasu.work per hari (Kamis - Rabu) + Update Acak",
+  "path": "/anime/animasu/schedule",
+  "status": "ready"
+        },
+        {
+  "name": "Animasu Detail",
+  "desc": "Informasi detail anime dari Animasu.work (judul, genre, status, rating, studio, dll)",
+  "path": "/anime/animasu/detail?url=",
+  "status": "ready",
+  "params": {
+    "url": "URL halaman anime Animasu (contoh: https://v1.animasu.work/anime/katainaka-no-ossan-kensei-ni-naru-s2/)"
+  }
+        },
+        {
+  "name": "Animasu Stream",
+  "desc": "Streaming anime dari Animasu.work — support 6 slot: Blogger, VidHidePro, Mega.nz, Desustream, Abyssplayer, Short.icu",
+  "path": "/anime/animasu/stream?url=",
+  "status": "ready",
+  "params": {
+    "url": "URL episode Animasu (contoh: https://v1.animasu.work/nonton-bubblegum-crisis-episode-8/)"
+  }
+        },
+    {
+      "name": "Samehadaku Latest",
+      "desc": "Mendapatkan daftar anime terbaru dari Samehadaku",
+      "path": "/anime/samehadaku/latest",
+      "status": "ready"
+    },
+        {
+      "name": "Samehadaku Search",
+      "desc": "Mencari anime di Samehadaku (judul, genre, rating, dll)",
+      "path": "/anime/samehadaku/search?q=",
+      "status": "ready",
+      "params": {
+        "q": "Judul anime yang ingin dicari (contoh: naruto, one piece)"
+      }
+    },
+            {
+      "name": "Samehadaku Stream",
+      "desc": "Mendapatkan link player video dari episode anime Samehadaku",
+      "path": "/anime/samehadaku/stream?url=",
+      "status": "ready",
+      "params": {
+        "url": "URL episode anime dari Samehadaku (contoh: https://v2.samehadaku.how/anime/xxx/episode-1/)"
+      }
+            },
+        {
+      "name": "Samehadaku Schedule",
+      "desc": "Mendapatkan jadwal rilis anime per hari (Senin - Minggu)",
+      "path": "/anime/samehadaku/schedule",
+      "status": "ready"
+    },
+ {
+  "name": "Animekuindo Search",
+  "desc": "Mencari anime di Animekuindo.life (judul, gambar, status, tipe)",
+  "path": "/anime/animekuindo/search?q=",
+  "status": "ready",
+  "params": {
+    "q": "Judul anime yang dicari (contoh: solo leveling)"
+  }
+},
+        {
+  "name": "Samehadaku Detail",
+  "desc": "Melihat detail lengkap anime (sinopsis, genre, total episode, daftar episode, dll) dari Samehadaku",
+  "path": "/anime/samehadaku/detail?url=",
+  "status": "ready",
+  "params": {
+    "url": "URL anime dari Samehadaku (contoh: https://v2.samehadaku.how/anime/nippon-sangoku/)"
+  }
+        },
+{
+  "name": "Animekuindo Detail",
+  "desc": "Detail lengkap anime dari Animekuindo.life (sinopsis, genre, episode, rating)",
+  "path": "/anime/animekuindo/detail?url=",
+  "status": "ready",
+  "params": {
+    "url": "URL detail anime (dari hasil search)",
+    "stream": "true/false - ambil link streaming tiap episode (default false)"
+  }
+},
+{
+  "name": "Animekuindo Stream",
+  "desc": "Ambil link streaming video dari episode anime",
+  "path": "/anime/animekuindo/stream?url=",
+  "status": "ready",
+  "params": {
+    "url": "URL episode anime (dari detail)"
+  }
+},
+{
+  "name": "Animekuindo Random",
+  "desc": "Dapatkan anime random dari Animekuindo.life",
+  "path": "/anime/animekuindo/random",
+  "status": "ready"
+        }
+      ]
+    },
+
+    {
+      "name": "Downloader",
+      "items": [
+        {
+  "name": "AIO Downloader",
+  "desc": "All in one downloader (support TikTok, Instagram, YouTube, Facebook, Twitter, dll) via j2download.com",
+  "path": "/download/aio?url=",
+  "status": "ready",
+  "params": {
+    "url": "URL media yang akan diunduh (TikTok, Instagram, YouTube, Facebook, Twitter, dll)"
+  }
+        },
+        {
+          "name": "Tiktok Downloader",
+          "desc": "Mengunduh video dari TikTok tanpa watermark.",
+          "path": "/download/tiktok?url=",
+          "status": "ready",
+          "params": {
+            "url": "URL video TikTok."
+          }
+        },
+        {
+  "name": "Facebook Video Downloader",
+  "desc": "Download video dari Facebook (berbagai kualitas + audio)",
+  "path": "/download/facebook?url=",
+  "status": "ready",
+  "params": {
+    "url": "URL video Facebook"
+  }
+        },
+        {
+  "name": "Pinterest Downloader",
+  "desc": "Download gambar/video dari Pinterest",
+  "path": "/download/pinterest?url=",
+  "status": "ready",
+  "params": {
+    "url": "URL Pinterest (contoh: https://pin.it/xxx atau https://pinterest.com/pin/xxx)"
+  }
+        },
+        {
+  "name": "Twitter/X Downloader",
+  "desc": "Download video dari Twitter/X (berbagai resolusi + audio)",
+  "path": "/download/twitter?url=",
+  "status": "ready",
+  "params": {
+    "url": "URL tweet Twitter/X (contoh: https://x.com/user/status/123456789)"
+  }
+        },
+{
+  "name": "YouTube Video (ytmp4)",
+  "desc": "Download video YouTube (pilih kualitas)",
+  "path": "/download/ytmp4?url=",
+  "status": "ready",
+  "params": {
+    "url": "URL YouTube"
+  }
+},
+{
+  "name": "YouTube Audio (ytmp3)",
+  "desc": "Download audio YouTube (MP3/M4A)",
+  "path": "/download/ytmp3?url=",
+  "status": "ready",
+  "params": {
+    "url": "URL YouTube"
+  }
+},
+{
+  "name": "Instagram Downloader",
+  "desc": "Download video/gambar dari Instagram (Reels, Post, Carousel)",
+  "path": "/download/igdl?url=",
+  "status": "ready",
+  "params": {
+    "url": "URL Instagram (reels, post, atau carousel)"
+  }
+},
+        {
+  "name": "Spotify Download",
+  "desc": "Download lagu dari URL Spotify (via spotmate.online)",
+  "path": "/download/spotifydl?url=",
+  "status": "ready",
+  "params": {
+    "url": "URL lagu Spotify (contoh: https://open.spotify.com/track/...)"
+  }
+        },
+        {
+          "name": "Douyin Downloader",
+          "desc": "Mengunduh video dari Douyin (versi China dari TikTok).",
+          "path": "/download/douyin?url=",
+          "status": "ready",
+          "params": {
+            "url": "URL video Douyin."
+          }
+        },
+        {
+          "name": "Snackvideo Downloader",
+          "desc": "Mengunduh video dari Snackvideo.",
+          "path": "/download/snackvideo?url=",
+          "status": "ready",
+          "params": {
+            "url": "URL video Snackvideo."
+          }
+        },
+        {
+          "name": "Capcut Downloader",
+          "desc": "Mengunduh video dari template Capcut.",
+          "path": "/download/capcut?url=",
+          "status": "ready",
+          "params": {
+            "url": "URL template Capcut."
+          }
+        },
+        {
+          "name": "Videy Downloader",
+          "desc": "Mengunduh video dari situs Videy.co.",
+          "path": "/download/videy?url=",
+          "status": "ready",
+          "params": {
+            "url": "URL video Videy."
+          }
+        }
+      ]
+    },
+{
+  "name": "Random",
+  "items": [
+    {
+      "name": "Blue Archive Image",
+      "desc": "Menampilkan gambar acak dari karakter game Blue Archive.",
+      "path": "/random/ba",
+      "status": "ready"
+    },
+{
+  "name": "Random Waifu",
+  "desc": "Dapatkan gambar waifu random",
+  "path": "/random/waifu",
+  "status": "ready"
+},
+    {
+  "name": "Random Loli",
+  "desc": "Dapatkan gambar loli random (waifu.pics)",
+  "path": "/random/loli",
+  "status": "ready"
+    },
+    {
+      "name": "Pap Ayang",
+      "desc": "Menampilkan gambar 'PAP Ayang' secara acak.",
+      "path": "/random/papayang",
+      "status": "ready"
+    }
+  ]
+},
+    {
+      "name": "Tools",
+      "items": [
+        {
+          "name": "Text-to-Speech",
+          "desc": "Mengubah teks menjadi suara (TTS) dengan berbagai pilihan suara, termasuk karakter anime.",
+          "path": "/tools/text-to-speech?text=",
+          "status": "ready",
+          "params": {
+            "text": "Teks yang ingin diubah menjadi suara."
+          }
+        },
+        {
+      "name": "Screenshot Web",
+      "desc": "Ambil screenshot dari URL website",
+      "path": "/tools/ssweb?url=",
+      "status": "ready",
+      "params": {
+        "url": "URL website yang mau di-screenshot"
+      }
+        },
+{
+  "name": "Upload File",
+  "desc": "Upload gambar/file ke uguu.se",
+  "path": "/tools/upload",
+  "method": "POST",
+  "status": "ready",
+  "params": {
+    "file": {
+      "description": "File yang mau diupload",
+      "type": "file"
+    }
+  }
+},
+        {
+  "name": "What Anime",
+  "desc": "Cari judul anime dari screenshot (upload file atau URL)",
+  "path": "/tools/whatanime?url=",
+  "status": "ready",
+  "params": {
+    "url": "URL gambar screenshot (opsional, bisa juga upload file via POST)"
+  }
+        },
+{
+  "name": "Image Enhancer HD",
+  "desc": "Tingkatkan kualitas gambar ke HD (masukkan URL gambar)",
+  "path": "/tools/enhance?url=",
+  "status": "ready",
+  "params": {
+    "url": "URL gambar yang mau ditingkatkan kualitasnya"
+  }
+},
+        {
+          "name": "Emoji Mix",
+          "desc": "Menggabungkan dua emoji menjadi satu emoji baru yang unik dalam bentuk gambar.",
+          "path": "/tools/emojimix?emoji1=&emoji2=",
+          "status": "ready",
+          "params": {
+            "emoji1": "Emoji pertama (contoh: 😂).",
+            "emoji2": "Emoji kedua (contoh: 👍)."
+          }
+        },
+        {
+  "name": "Remove Background",
+  "desc": "Hapus background gambar secara otomatis (support URL atau upload file)",
+  "path": "/tools/removebg?url=",
+  "status": "ready",
+  "params": {
+    "url": "URL gambar yang mau dihapus backgroundnya"
+  }
+        },
+        {
+          "name": "Host Info",
+          "desc": "Mendapatkan informasi detail mengenai sebuah host (IP atau domain).",
+          "path": "/tools/hostinfo?host=",
+          "status": "ready",
+          "params": {
+            "host": "Alamat IP atau nama domain (contoh: google.com)."
+          }
+        },
+        {
+          "name": "NSFW Content Check",
+          "desc": "Mendeteksi apakah sebuah gambar mengandung konten dewasa (NSFW).",
+          "path": "/tools/nsfw-check?url=",
+          "status": "ready",
+          "params": {
+            "url": "URL gambar yang ingin diperiksa."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Search",
+      "items": [
+        {
+          "name": "Youtube",
+          "desc": "Melakukan pencarian video di platform YouTube.",
+          "path": "/search/youtube?q=",
+          "status": "ready",
+          "params": {
+            "q": "Kata kunci untuk pencarian video."
+          }
+        },
+        {
+  "name": "Pinterest Video",
+  "desc": "Mencari video di Pinterest",
+  "path": "/search/pinterest/video?q=",
+  "status": "ready",
+  "params": {
+    "q": "Kata kunci pencarian",
+    "limit": "(Opsional) Jumlah hasil, maks 30, default 10"
+  }
+        },
+        {
+  "name": "Bilibili Search",
+  "desc": "Mencari anime/video di Bilibili.tv (Official & User Content)",
+  "path": "/search/bilibili?q=",
+  "status": "ready",
+  "params": {
+    "q": "Kata kunci pencarian (judul anime, video, dll)"
+  }
+        },
+        {
+          "name": "Spotify Search",
+          "desc": "Melakukan pencarian lagu berdasarkan judul atau artis di Spotify.",
+          "path": "/search/spotify?q=",
+          "status": "ready",
+          "params": {
+            "q": "Judul lagu atau nama artis."
+          }
+        },
+        {
+  "name": "Pinterest Search",
+  "desc": "Mencari gambar di Pinterest (tanpa API key)",
+  "path": "/search/pinterest?q=",
+  "status": "ready",
+  "params": {
+    "q": "Kata kunci pencarian",
+    "limit": "(Opsional) Jumlah hasil, maks 50, default 20"
+  }
+        },
+        {
+          "name": "NPM Package Search",
+          "desc": "Mencari package di Node Package Manager (NPM).",
+          "path": "/search/npm?q=",
+          "status": "ready",
+          "params": {
+            "q": "Nama package NPM yang ingin dicari."
+          }
+        },
+        {
+          "name": "F-Droid Search",
+          "desc": "Mencari aplikasi open-source di F-Droid.",
+          "path": "/search/fdroid?q=",
+          "status": "ready",
+          "params": {
+            "q": "Nama aplikasi yang ingin dicari di F-Droid."
+          }
+        },
+        {
+          "name": "Tiktok Search",
+          "desc": "Melakukan pencarian video di TikTok.",
+          "path": "/search/tiktok?q=",
+          "status": "ready",
+          "params": {
+            "q": "Kata kunci untuk pencarian video TikTok."
+          }
+        }
+      ]
+    },
+{
+  "name": "Game",
+  "image": "/api/placeholder/800/200",
+  "items": [
+    {
+      "name": "Tebak Gambar",
+      "desc": "Tebak gambar berdasarkan soal",
+      "path": "/game/tebakgambar/start",
+      "status": "ready"
+    },
+    {
+      "name": "Cak Lontong",
+      "desc": "Game cak lontong",
+      "path": "/game/caklontong/start",
+      "status": "ready"
+    },
+    {
+      "name": "Family 100",
+      "desc": "Game family 100",
+      "path": "/game/family100/start",
+      "status": "ready"
+    },
+    {
+      "name": "Asah Otak",
+      "desc": "Game asah otak",
+      "path": "/game/asahotak/start",
+      "status": "ready"
+    },
+    {
+      "name": "Tebak Kata",
+      "desc": "Tebak kata berdasarkan petunjuk",
+      "path": "/game/tebakkata/start",
+      "status": "ready"
+    },
+    {
+      "name": "Teka Teki",
+      "desc": "Teka teki",
+      "path": "/game/tekateki/start",
+      "status": "ready"
+    },
+    {
+      "name": "Tebak Kimia",
+      "desc": "Tebak unsur kimia",
+      "path": "/game/tebakkimia/start",
+      "status": "ready"
+    },
+    {
+      "name": "Siapakah Aku",
+      "desc": "Tebak tokoh terkenal",
+      "path": "/game/siapakahaku/start",
+      "status": "ready"
+    },
+    {
+      "name": "Susun Kata",
+      "desc": "Susun kata menjadi kata yang benar",
+      "path": "/game/susunkata/start",
+      "status": "ready"
+    },
+    {
+      "name": "Tebak Bendera",
+      "desc": "Tebak bendera negara",
+      "path": "/game/tebakbendera/start",
+      "status": "ready"
+    },
+    {
+      "name": "Tebak Lirik",
+      "desc": "Tebak lirik lagu",
+      "path": "/game/tebaklirik/start",
+      "status": "ready"
+    },
+    {
+      "name": "Tebak Tebakan",
+      "desc": "Tebak tebakan",
+      "path": "/game/tebaktebakan/start",
+      "status": "ready"
+    },
+    {
+      "name": "Jawab Game",
+      "desc": "Jawab pertanyaan game",
+      "path": "/game/answer?answer=",
+      "status": "ready",
+      "params": {
+        "user_id": "ID user (opsional)",
+        "answer": "Jawaban tebakan"
+      }
+    }
+  ]
+},
+    {
+      "name": "API",
+      "items": [
+        {
+          "name": "API Status",
+          "desc": "Memeriksa status layanan API, termasuk total request, total fitur, dan waktu aktif (uptime).",
+          "path": "/api/status",
+          "status": "ready"
+        }
+      ]
+    }
+  ]
+}

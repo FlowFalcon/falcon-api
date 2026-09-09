@@ -1,45 +1,19 @@
 {
-  "name": "falcon-api",
-  "version": "1.0.0",
-  "description": "A simple and customizable API documentation interface built with Express.js.",
-  "main": "index.js",
-  "type": "commonjs",
-  "scripts": {
-    "start": "node --no-deprecation index.js"
-  },
-  "engines": {
-  "node": ">=20"
-  },
-  "author": "Skyzopedia",
+  "name": "workspace",
+  "version": "0.0.0",
   "license": "MIT",
+  "scripts": {
+    "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
+    "build": "pnpm run typecheck && pnpm -r --if-present run build",
+    "typecheck:libs": "tsc --build",
+    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
+  },
+  "private": true,
   "dependencies": {
-    "axios": "^1.6.8",
-    "body-parser": "^1.20.3",
-    "chalk": "^4.1.2",
-    "cheerio": "^1.0.0",
-    "cors": "^2.8.5",
-    "express": "^4.19.2",
-    "node-fetch": "^2.6.1",
-    "nodemon": "^3.1.9",
-    "yt-search": "^2.12.1",   
-    "@vreden/youtube_scraper": "^1.2.5",
-    "@fongsidev/scraper": "^1.0.2-4.2", 
-    "async-g-i-s": "^1.5.5",
-    "form-data": "^4.0.1",
-    "file-type": "^16.5.3",
-    "groq-sdk": "^0.9.1",
-    "ocr-space-api-wrapper": "^2.3.2",
-    "jimp": "^0.16.1",
-    "moment-timezone": "^0.5.34",
-    "node-upload-images": "^1.0.1",
-    "qrcode": "^1.5.4", 
-    "qs": "^6.14.0",
-    "multer": "latest",
-    "image-size": "latest",
-    "@supabase/supabase-js": "2.49.4",
-    "pdfkit": "0.17.1",
-    "@rynn-k/proxy-agent": "latest",
-    "https-proxy-agent": "latest",
-    "@vercel/analytics": "latest"
+    "@replit/connectors-sdk": "^0.4.1"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.6",
+    "typescript": "~5.9.3"
   }
 }
