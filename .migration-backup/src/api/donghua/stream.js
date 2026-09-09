@@ -1,4 +1,4 @@
-const { fetchSite } = require('./fetchSite');
+const { fetchSite, mapUpstreamError } = require('./fetchSite');
 const cheerio = require('cheerio');
 
 const BASE_URL = "https://donghub.vip";
@@ -169,20 +169,14 @@ module.exports = (app) => {
 
     } catch (error) {
       console.error('[Donghua Stream Error]', error.message);
-
-      if (error.response?.status === 404) {
-        return res.status(404).json({
-          status: false,
-          creator: getCreator(),
-          error: 'Episode tidak ditemukan',
-          note: 'Periksa kembali slug episode'
-        });
+      const mapped = mapUpstreamError(error);
+      if (mapped.code === 404) {
+        mapped.body.note = mapped.body.note || 'Periksa kembali slug episode';
       }
-
-      res.status(500).json({
+      return res.status(mapped.code).json({
         status: false,
         creator: getCreator(),
-        error: error.message
+        ...mapped.body
       });
     }
   });
