@@ -1,4 +1,4 @@
-const { fetchSite } = require('./fetchSite');
+const { fetchSite, mapUpstreamError } = require('./fetchSite');
 const cheerio = require('cheerio');
 
 const BASE_URL = "https://donghub.vip";
@@ -127,19 +127,11 @@ module.exports = (app) => {
 
     } catch (error) {
       console.error('[Detail Error]', error.message);
-
-      if (error.response?.status === 403) {
-        return res.status(403).json({
-          status: false,
-          creator: getCreator(),
-          error: 'Akses ditolak oleh Cloudflare'
-        });
-      }
-
-      res.status(500).json({
+      const mapped = mapUpstreamError(error);
+      return res.status(mapped.code).json({
         status: false,
         creator: getCreator(),
-        error: error.message
+        ...mapped.body
       });
     }
   });
